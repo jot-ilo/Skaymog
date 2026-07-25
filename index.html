@@ -4728,7 +4728,6 @@
         if (user) {
           selectedChatUser.value = user;
           currentTab.value = 'messages';
-          currentPage.value = 'home';
           if (messages.value[userId]) {
             messages.value[userId].forEach(m => m.read = true);
           }
