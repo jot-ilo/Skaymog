@@ -4712,7 +4712,16 @@
       const audioChunks = ref([]);
       const chatMessagesRef = ref(null);
 
-      const getChatMessages = (userId) => messages.value[userId] || [];
+      const getChatId = (userId) => {
+  return [String(currentUser.value.id), String(userId)]
+    .sort()
+    .join("_");
+};
+
+      const getChatMessages = (userId) => {
+  const chatId = getChatId(userId);
+  return messages.value[chatId] || [];
+};
       const getLastMessage = (userId) => {
         const msgs = messages.value[userId] || [];
         if (msgs.length === 0) return 'Aucun message';
@@ -4731,9 +4740,11 @@ const startChat = (userId) => {
     selectedChatUser.value = user;
     currentTab.value = 'messages';
 
-    if (messages.value[userId]) {
-        messages.value[userId].forEach(m => m.read = true);
-    }
+    const chatId = getChatId(userId);
+
+if (messages.value[chatId]) {
+    messages.value[chatId].forEach(m => m.read = true);
+}
 
     saveAll();
     nextTick(() => scrollToBottom());
@@ -4750,10 +4761,14 @@ const startChat = (userId) => {
           type: 'text',
           read: false
         };
-        if (!messages.value[selectedChatUser.value.id]) messages.value[selectedChatUser.value.id] = [];
-        messages.value[selectedChatUser.value.id].push(msg);
+        const chatId = getChatId(selectedChatUser.value.id);
+
+if (!messages.value[chatId])
+    messages.value[chatId] = [];
+
+messages.value[chatId].push(msg);
         newMessage.value = '';
-        saveAll();
+        saveMessages();
         if (Math.random() > 0.3) {
           setTimeout(() => {
             const reply = {
@@ -4765,7 +4780,7 @@ const startChat = (userId) => {
               read: false
             };
             messages.value[selectedChatUser.value.id].push(reply);
-            saveAll();
+            saveMessages();
             nextTick(() => scrollToBottom());
           }, 1000 + Math.random() * 2000);
         }
@@ -4781,8 +4796,12 @@ const startChat = (userId) => {
           type: 'audio',
           read: false
         };
-        if (!messages.value[selectedChatUser.value.id]) messages.value[selectedChatUser.value.id] = [];
-        messages.value[selectedChatUser.value.id].push(msg);
+        const chatId = getChatId(selectedChatUser.value.id);
+
+if (!messages.value[chatId])
+    messages.value[chatId] = [];
+
+messages.value[chatId].push(msg);
         saveAll();
         nextTick(() => scrollToBottom());
       };
