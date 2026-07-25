@@ -4974,14 +4974,14 @@
             db.collection(NEW_RELEASES_COLLECTION).doc(String(item.id)).set(item, { merge: true })
           ));
 
-          if (currentUser.value && currentUser.value.role !== 'guest') {
-            await saveSocialDataCloud();
-            await db.collection(USERS_COLLECTION).doc(String(currentUser.value.id)).set({
-              ...currentUser.value,
-              usernameLower: (currentUser.value.username || '').toLowerCase(),
-              updatedAt: firebase.firestore.FieldValue.serverTimestamp()
-            }, { merge: true });
-          }
+if (currentUser.value && currentUser.value.role !== 'guest') {
+  await saveSocialDataCloud();
+  await db.collection(USERS_COLLECTION).doc(String(currentUser.value.id)).set({
+    ...currentUser.value,
+    usernameLower: (currentUser.value.username || '').toLowerCase(),
+    updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+  }, { merge: true });
+}
 
           await db.doc(STATE_PATH).set({
             proposals: proposals.value,
