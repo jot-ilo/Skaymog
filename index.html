@@ -4723,18 +4723,17 @@
         const msgs = messages.value[userId] || [];
         return msgs.filter(m => !m.read && m.senderId !== currentUser.value.id).length;
       };
-      const startChat = (userId) => {
-        const user = users.value.find(u => String(u.id) === String(userId));
-        if (user) {
-          selectedChatUser.value = user;
-          currentTab.value = 'messages';
-          if (messages.value[userId]) {
-            messages.value[userId].forEach(m => m.read = true);
-          }
-          saveAll();
-          nextTick(() => { scrollToBottom(); });
-        }
-      };
+const startChat = (userId) => {
+    const user = users.value.find(u => u.id == userId);
+
+    alert("Utilisateur trouvé : " + (user ? "Oui" : "Non"));
+
+    if (!user) return;
+
+    selectedChatUser.value = user;
+
+    alert("selectedChatUser = " + selectedChatUser.value.username);
+};
       const openChat = (userId) => startChat(userId);
       const sendMessage = () => {
         if (!selectedChatUser.value) return;
