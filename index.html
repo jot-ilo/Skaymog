@@ -4724,7 +4724,7 @@
         return msgs.filter(m => !m.read && m.senderId !== currentUser.value.id).length;
       };
       const startChat = (userId) => {
-        const user = users.value.find(u => u.id === userId);
+        const user = users.value.find(u => String(u.id) === String(userId));
         if (user) {
           selectedChatUser.value = user;
           currentTab.value = 'messages';
