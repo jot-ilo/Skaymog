@@ -3125,7 +3125,7 @@
           <div class="cat" v-for="c in categories" :class="{active:catFilter===c}" @click="selectCategory(c)"><i class="fas fa-tag"></i> {{c}}</div>
         </div>
         <div class="grid">
-          <div class="card" v-for="item in paginatedHome" :key="item.id" @click="goToDetail(item.id, item.type, false, true)">
+          <div class="card" v-for="item in paginatedHome" :key="item.id" @click="goToDetail(item.id, item.type, false, false)">
             <div class="thumb">
               <img v-if="item.thumb" :src="item.thumb" :alt="item.title" loading="lazy" @error="e=>e.target.style.display='none'">
               <i v-else class="fas fa-image"></i>
