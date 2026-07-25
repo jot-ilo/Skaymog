@@ -6189,7 +6189,7 @@
       };
 
       // --- FOLLOW ---
-      const toggleFollow = (userId) => {
+      const toggleFollow = async (userId) => {
         if (!currentUser.value || currentUser.value.role === 'guest') {
           showToast('Connectez-vous pour suivre !', 'warning');
           return;
@@ -6207,7 +6207,7 @@
           followers.value[userId].push(currentUser.value.id);
           showToast('Vous suivez maintenant cet utilisateur !', 'success');
         }
-        saveAll();
+        await saveSocialDataCloud();
         updateFriends();
       };
 
