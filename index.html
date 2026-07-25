@@ -4975,7 +4975,7 @@
           ));
 
           if (currentUser.value && currentUser.value.role !== 'guest') {
-            await saveUserDataCloud();
+            await saveSocialDataCloud();
             await db.collection(USERS_COLLECTION).doc(String(currentUser.value.id)).set({
               ...currentUser.value,
               usernameLower: (currentUser.value.username || '').toLowerCase(),
