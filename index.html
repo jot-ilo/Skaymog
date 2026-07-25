@@ -3383,7 +3383,7 @@
                En train d'écrire...
             </span>
           </div>
-          <div class="chat-messages" ref="chatMessages">
+          <div class="chat-messages" ref="chatMessagesRef">
             <div class="msg" :class="msg.senderId === currentUser.id ? 'sent' : 'received'" v-for="msg in getChatMessages(selectedChatUser.id)" :key="msg.id">
               <div v-if="msg.type === 'audio'" class="audio-msg">
                 <i class="fas fa-microphone"></i>
