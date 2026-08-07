@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Skaymog </title>
-  <link rel="icon" type="image/png" href="images/favicon.png">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🐉</text></svg>" />
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
 
   <!-- Firebase SDKs -->
@@ -724,240 +724,276 @@
       gap: 1.5rem;
       margin: 1.5rem 0;
     }
-.card {
-    background: var(--bg2);
-    border-radius: var(--radius);
-    padding: 0.8rem;
-    border: 1px solid var(--border);
-    transition: 0.25s;
-    display: flex;
-    flex-direction: column;
-    box-shadow: var(--shadow);
-    position: relative;
-    cursor: pointer;
+    
+    /* ============================================================
+       CARTES UNIFORMISÉES
+       ============================================================ */
+    .card {
+        background: var(--bg2);
+        border-radius: var(--radius);
+        padding: 0.8rem;
+        border: 1px solid var(--border);
+        transition: 0.25s;
+        display: flex;
+        flex-direction: column;
+        box-shadow: var(--shadow);
+        position: relative;
+        cursor: pointer;
+        
+        height: 100%;
+        min-height: 340px;
+        box-sizing: border-box;
+    }
 
-    height: 100%;
-}
     .card:hover {
-      transform: translateY(-4px);
-      border-color: var(--accent);
-      box-shadow: 0 8px 25px rgba(255,107,157,0.15);
+        transform: translateY(-4px);
+        border-color: var(--accent);
+        box-shadow: 0 8px 25px rgba(255,107,157,0.15);
     }
+
     .card .thumb {
-      width: 100%;
-      aspect-ratio: 16/9;
-      background: var(--bg3);
-      border-radius: 12px;
-      margin-bottom: 0.6rem;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      color: var(--text2);
-      overflow: hidden;
-      border: 1px solid var(--border);
-      position: relative;
+        width: 100%;
+        aspect-ratio: 16/9;
+        background: var(--bg3);
+        border-radius: 12px;
+        margin-bottom: 0.6rem;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: var(--text2);
+        overflow: hidden;
+        border: 1px solid var(--border);
+        position: relative;
+        flex-shrink: 0;
     }
+
     .card .thumb img {
-      width: 100%;
-      height: 100%;
-      object-fit: cover;
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
     }
+
     .card .thumb .badge-watched {
-      position: absolute;
-      top: 4px;
-      right: 4px;
-      background: var(--green);
-      color: #fff;
-      font-size: 0.6rem;
-      padding: 0.1rem 0.5rem;
-      border-radius: 12px;
+        position: absolute;
+        top: 4px;
+        right: 4px;
+        background: var(--green);
+        color: #fff;
+        font-size: 0.6rem;
+        padding: 0.1rem 0.5rem;
+        border-radius: 12px;
     }
+
     .card .thumb .badge-upcoming {
-      position: absolute;
-      top: 4px;
-      left: 4px;
-      background: var(--orange);
-      color: #fff;
-      font-size: 0.6rem;
-      padding: 0.1rem 0.5rem;
-      border-radius: 12px;
+        position: absolute;
+        top: 4px;
+        left: 4px;
+        background: var(--orange);
+        color: #fff;
+        font-size: 0.6rem;
+        padding: 0.1rem 0.5rem;
+        border-radius: 12px;
     }
+
     .card .thumb .badge-movie {
-      position: absolute;
-      bottom: 4px;
-      left: 4px;
-      background: var(--purple);
-      color: #fff;
-      font-size: 0.6rem;
-      padding: 0.1rem 0.5rem;
-      border-radius: 12px;
+        position: absolute;
+        bottom: 4px;
+        left: 4px;
+        background: var(--purple);
+        color: #fff;
+        font-size: 0.6rem;
+        padding: 0.1rem 0.5rem;
+        border-radius: 12px;
     }
+
     .card .thumb .badge-series {
-      position: absolute;
-      bottom: 4px;
-      left: 4px;
-      background: var(--blue);
-      color: #fff;
-      font-size: 0.6rem;
-      padding: 0.1rem 0.5rem;
-      border-radius: 12px;
+        position: absolute;
+        bottom: 4px;
+        left: 4px;
+        background: var(--blue);
+        color: #fff;
+        font-size: 0.6rem;
+        padding: 0.1rem 0.5rem;
+        border-radius: 12px;
     }
+
     .card .thumb .badge-oav {
-      position: absolute;
-      bottom: 4px;
-      left: 4px;
-      background: var(--orange);
-      color: #0b0a0c;
-      font-size: 0.6rem;
-      padding: 0.1rem 0.5rem;
-      border-radius: 12px;
+        position: absolute;
+        bottom: 4px;
+        left: 4px;
+        background: var(--orange);
+        color: #0b0a0c;
+        font-size: 0.6rem;
+        padding: 0.1rem 0.5rem;
+        border-radius: 12px;
     }
+
     .card .thumb .badge-proposed {
-      position: absolute;
-      top: 4px;
-      left: 4px;
-      background: var(--accent2);
-      color: #0b0a0c;
-      font-size: 0.6rem;
-      padding: 0.1rem 0.5rem;
-      border-radius: 12px;
+        position: absolute;
+        top: 4px;
+        left: 4px;
+        background: var(--accent2);
+        color: #0b0a0c;
+        font-size: 0.6rem;
+        padding: 0.1rem 0.5rem;
+        border-radius: 12px;
     }
+
     .card .thumb .badge-new {
-      position: absolute;
-      top: 4px;
-      right: 4px;
-      background: var(--green);
-      color: #fff;
-      font-size: 0.6rem;
-      padding: 0.1rem 0.5rem;
-      border-radius: 12px;
-      animation: pulse 1.5s infinite;
+        position: absolute;
+        top: 4px;
+        right: 4px;
+        background: var(--green);
+        color: #fff;
+        font-size: 0.6rem;
+        padding: 0.1rem 0.5rem;
+        border-radius: 12px;
+        animation: pulse 1.5s infinite;
     }
+
     .card .thumb .badge-added {
-      position: absolute;
-      top: 4px;
-      left: 4px;
-      background: var(--green);
-      color: #fff;
-      font-size: 0.6rem;
-      padding: 0.1rem 0.5rem;
-      border-radius: 12px;
+        position: absolute;
+        top: 4px;
+        left: 4px;
+        background: var(--green);
+        color: #fff;
+        font-size: 0.6rem;
+        padding: 0.1rem 0.5rem;
+        border-radius: 12px;
     }
+
     .card .thumb .badge-newrelease {
-      position: absolute;
-      top: 4px;
-      left: 4px;
-      background: var(--orange);
-      color: #fff;
-      font-size: 0.6rem;
-      padding: 0.1rem 0.5rem;
-      border-radius: 12px;
-      animation: pulse 1.5s infinite;
+        position: absolute;
+        top: 4px;
+        left: 4px;
+        background: var(--orange);
+        color: #fff;
+        font-size: 0.6rem;
+        padding: 0.1rem 0.5rem;
+        border-radius: 12px;
+        animation: pulse 1.5s infinite;
     }
+
     .card .thumb .badge-dot {
-      position: absolute;
-      top: 4px;
-      right: 4px;
-      width: 8px;
-      height: 8px;
-      border-radius: 50%;
-      background: var(--green);
-      border: 1px solid var(--bg2);
+        position: absolute;
+        top: 4px;
+        right: 4px;
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        background: var(--green);
+        border: 1px solid var(--bg2);
     }
+
     .card .proposed-by-text {
-      font-size: 0.65rem;
-      color: var(--text2);
-      margin-top: -0.3rem;
-      margin-bottom: 0.2rem;
-      text-align: left;
+        font-size: 0.65rem;
+        color: var(--text2);
+        margin-top: -0.3rem;
+        margin-bottom: 0.2rem;
+        text-align: left;
+        flex-shrink: 0;
     }
+
     .card .proposed-by-text i {
-      color: var(--accent);
-      margin-right: 3px;
+        color: var(--accent);
+        margin-right: 3px;
     }
-.card .title {
-    font-weight: 700;
-    font-size: 1rem;
-    margin-bottom: 0.2rem;
 
-    display: -webkit-box;
-    -webkit-box-orient: vertical;
-    -webkit-line-clamp: 2;
+    .card .title {
+        font-weight: 700;
+        font-size: 1rem;
+        margin-bottom: 0.2rem;
+        display: -webkit-box;
+        -webkit-box-orient: vertical;
+        -webkit-line-clamp: 2;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        line-height: 1.3;
+        min-height: 2.6em;
+        flex-shrink: 0;
+    }
 
-    overflow: hidden;
-    text-overflow: ellipsis;
+    .card .details {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.2rem 0.5rem;
+        font-size: 0.75rem;
+        color: var(--text2);
+        margin: 0.2rem 0 0.4rem;
+        min-height: 72px;
+        overflow: hidden;
+        flex-shrink: 0;
+    }
 
-    line-height: 1.3;
-    min-height: 2.6em;
-}
-.card .details {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 0.2rem 0.5rem;
-    font-size: 0.75rem;
-    color: var(--text2);
-    margin: 0.2rem 0 0.4rem;
-
-    min-height: 72px;
-    overflow: hidden;
-}
     .card .details i {
-      color: var(--accent);
-      width: 14px;
-      font-size: 0.65rem;
+        color: var(--accent);
+        width: 14px;
+        font-size: 0.65rem;
     }
+
     .card .details .release-date {
-      color: var(--orange);
-      font-weight: 600;
+        color: var(--orange);
+        font-weight: 600;
     }
-.card .actions {
-    display: flex;
-    flex-wrap: wrap;
-    justify-content: space-between;
-    align-items: center;
 
-    margin-top: auto;
+    .card .actions {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: space-between;
+        align-items: center;
+        margin-top: auto;
+        padding-top: 4px;
+        border-top: 1px solid var(--border);
+        gap: 4px;
+        flex-shrink: 0;
+    }
 
-    gap: 4px;
-}
     .card .actions .like-btn:hover { color: var(--accent); }
     .card .actions .like-btn.liked { color: var(--accent); }
     .card .actions .like-btn .count { font-weight: 700; }
+    
     .card .actions .btn-watched {
-      background: transparent;
-      border: 1px solid var(--border);
-      color: var(--text2);
-      padding: 0.1rem 0.6rem;
-      border-radius: 20px;
-      font-size: 0.65rem;
-      cursor: pointer;
+        background: transparent;
+        border: 1px solid var(--border);
+        color: var(--text2);
+        padding: 0.1rem 0.6rem;
+        border-radius: 20px;
+        font-size: 0.65rem;
+        cursor: pointer;
     }
+    
     .card .actions .btn-watched.watched {
-      background: var(--green);
-      border-color: var(--green);
-      color: #fff;
+        background: var(--green);
+        border-color: var(--green);
+        color: #fff;
     }
+    
     .card .actions .btn-watched:hover { border-color: var(--accent); }
+    
     .card .actions .btn-watched:disabled,
     .card .actions .like-btn:disabled {
-      opacity: 0.5;
-      cursor: not-allowed;
-      pointer-events: none;
+        opacity: 0.5;
+        cursor: not-allowed;
+        pointer-events: none;
     }
+    
     .card .actions .menu-btn {
-      background: transparent;
-      border: none;
-      color: var(--text2);
-      cursor: pointer;
-      font-size: 1.2rem;
-      padding: 0 4px;
+        background: transparent;
+        border: none;
+        color: var(--text2);
+        cursor: pointer;
+        font-size: 1.2rem;
+        padding: 0 4px;
     }
+    
     .card .actions .menu-btn:hover { color: var(--accent); }
+    
     .card .actions .menu-btn:disabled {
-      opacity: 0.3;
-      cursor: not-allowed;
-      pointer-events: none;
+        opacity: 0.3;
+        cursor: not-allowed;
+        pointer-events: none;
     }
+
     .pages {
       display: flex;
       justify-content: center;
@@ -1343,6 +1379,7 @@
       gap: 0.8rem;
       cursor: pointer;
       position: relative;
+      min-height: 60px;
     }
     .lists-page .list-content .list-item:hover { border-color: var(--accent); }
     .lists-page .list-content .list-item .thumb-sm {
@@ -1351,6 +1388,7 @@
       background: var(--bg2);
       border-radius: 6px;
       overflow: hidden;
+      flex-shrink: 0;
     }
     .lists-page .list-content .list-item .thumb-sm img {
       width: 100%;
@@ -1359,10 +1397,14 @@
     }
     .lists-page .list-content .list-item .info {
       flex: 1;
+      min-width: 0;
     }
     .lists-page .list-content .list-item .info .title {
       font-weight: 600;
       font-size: 0.85rem;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
     }
     .lists-page .list-content .list-item .info .sub {
       font-size: 0.7rem;
@@ -1375,6 +1417,7 @@
       cursor: pointer;
       font-size: 1.2rem;
       padding: 0 4px;
+      flex-shrink: 0;
     }
     .lists-page .list-content .list-item .menu-btn:hover { color: var(--accent); }
     .profile-page {
@@ -2346,8 +2389,14 @@
       .licence-page h1 { font-size: 1.5rem; }
     }
     @media (max-width:480px) {
-      .grid { grid-template-columns: 1fr 1fr; }
-      .card { padding: 0.5rem; }
+      .grid { grid-template-columns: 1fr 1fr; gap: 0.8rem; }
+      .card { padding: 0.5rem; min-height: 280px; }
+      .card .title { font-size: 0.85rem; min-height: 2.2em; }
+      .card .details { min-height: 56px; font-size: 0.7rem; }
+      .card .actions { padding-top: 2px; gap: 2px; }
+      .card .actions .btn-watched { font-size: 0.55rem; padding: 0.05rem 0.4rem; }
+      .card .actions .like-btn { font-size: 0.8rem; }
+      .card .proposed-by-text { font-size: 0.55rem; }
       .logo { font-size: 1.3rem; }
       .messages-page .conversation-list .conv-item .info .last-msg { max-width: 120px; }
       .licence-page .creators .creator { font-size: 0.8rem; }
