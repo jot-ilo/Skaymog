@@ -357,11 +357,12 @@
     .btn-primary {
       background: var(--accent);
       border: none;
-      color: #0b0a0c;
+      color: #fff;
     }
     .btn-primary:hover {
       background: var(--accent2);
       border: none;
+      color: #0b0a0c;
     }
     .btn-success {
       background: var(--green);
@@ -386,7 +387,7 @@
       border: none;
       color: #fff;
     }
-    .btn-warning:hover { background: #d6005c; }
+    .btn-warning:hover { background: var(--accent2); color: #0b0a0c; }
     .btn-sm {
       padding: 0.2rem 0.8rem;
       font-size: 0.75rem;
@@ -2058,7 +2059,7 @@
     .messages-page .chat-box .chat-messages .msg.sent {
       align-self: flex-end;
       background: var(--accent);
-      color: #0b0a0c;
+      color: #fff;
     }
     .messages-page .chat-box .chat-messages .msg.received {
       align-self: flex-start;
@@ -2630,9 +2631,35 @@
       justify-content: flex-start;
       padding: 0.6rem 1.2rem;
       font-size: 0.9rem;
+      background: var(--accent);
+      border: none;
+      color: #fff;
+    }
+    .admin-sidebar .admin-btn:hover {
+      background: var(--accent2);
+      color: #0b0a0c;
     }
     .admin-sidebar .admin-btn i {
       width: 24px;
+    }
+    .admin-sidebar .admin-btn.danger {
+      background: var(--red);
+    }
+    .admin-sidebar .admin-btn.danger:hover {
+      background: #d32f2f;
+      color: #fff;
+    }
+    .admin-sidebar .admin-btn.success {
+      background: var(--green);
+    }
+    .admin-sidebar .admin-btn.success:hover {
+      background: #388e3c;
+    }
+    .admin-sidebar .admin-btn.info {
+      background: var(--blue);
+    }
+    .admin-sidebar .admin-btn.info:hover {
+      background: #1976d2;
     }
     .admin-page-content {
       flex: 1;
@@ -2792,7 +2819,7 @@
         <button class="btn btn-sm" @click="logoutGuest" v-if="currentUser && currentUser.role === 'guest'">
           <i class="fas fa-sign-out-alt"></i> Quitter
         </button>
-        <button class="btn btn-sm" style="background:var(--accent);color:#0b0a0c;border:none;" @click="openSettings">
+        <button class="btn btn-sm" style="background:var(--accent);color:#fff;border:none;" @click="openSettings">
           <i class="fas fa-cog"></i>
         </button>
       </div>
@@ -3218,13 +3245,13 @@
       
       <div class="admin-layout">
         <div class="admin-sidebar">
-          <button class="btn btn-primary admin-btn" @click="adminPage='add-series';resetAdminForm()"><i class="fas fa-plus"></i> Ajouter une série</button>
-          <button class="btn btn-purple admin-btn" @click="adminPage='add-movie';resetAdminForm()"><i class="fas fa-plus"></i> Ajouter un film</button>
-          <button class="btn btn-warning admin-btn" @click="adminPage='add-oav';resetAdminForm()"><i class="fas fa-plus"></i> Ajouter un OAV</button>
-          <button class="btn btn-danger admin-btn" @click="adminPage='delete-items'"><i class="fas fa-trash"></i> Supprimer des animés</button>
-          <button class="btn btn-success admin-btn" @click="adminPage='add-category'"><i class="fas fa-tag"></i> Ajouter une catégorie</button>
-          <button class="btn btn-danger admin-btn" @click="adminPage='delete-user'"><i class="fas fa-user-minus"></i> Supprimer un utilisateur</button>
-          <button class="btn btn-info admin-btn" @click="adminPage='reports'"><i class="fas fa-flag"></i> Signalements</button>
+          <button class="btn admin-btn" @click="adminPage='add-series';resetAdminForm()"><i class="fas fa-plus"></i> Ajouter une série</button>
+          <button class="btn admin-btn" @click="adminPage='add-movie';resetAdminForm()"><i class="fas fa-plus"></i> Ajouter un film</button>
+          <button class="btn admin-btn" @click="adminPage='add-oav';resetAdminForm()"><i class="fas fa-plus"></i> Ajouter un OAV</button>
+          <button class="btn admin-btn danger" @click="adminPage='delete-items'"><i class="fas fa-trash"></i> Supprimer des animés</button>
+          <button class="btn admin-btn success" @click="adminPage='add-category'"><i class="fas fa-tag"></i> Ajouter une catégorie</button>
+          <button class="btn admin-btn danger" @click="adminPage='delete-user'"><i class="fas fa-user-minus"></i> Supprimer un utilisateur</button>
+          <button class="btn admin-btn info" @click="adminPage='reports'"><i class="fas fa-flag"></i> Signalements</button>
         </div>
         
         <div class="admin-page-content">
@@ -4061,7 +4088,7 @@
         </div>
         <div class="you-actions">
           <button class="btn btn-primary" @click="goToMyProfile"><i class="fas fa-user-edit"></i> Modifier le profil</button>
-          <button class="btn btn-danger" @click="logout"><i class="fas fa-sign-out-alt"></i> Déconnexion</button>
+          <button class="btn btn-primary" @click="logout"><i class="fas fa-sign-out-alt"></i> Déconnexion</button>
         </div>
       </div>
 
