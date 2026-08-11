@@ -190,15 +190,15 @@
       --text: #f0eae3;
       --text2: #b8a6b0;
       --border: #3a2c33;
-      --accent: #ff6b9d;
-      --accent2: #ffb347;
+      --accent: #FF006C;
+      --accent2: #06F980;
       --shadow: 0 8px 20px rgba(0, 0, 0, 0.7);
       --radius: 16px;
       --green: #4caf50;
       --red: #f44336;
       --blue: #2196f3;
       --purple: #9c27b0;
-      --orange: #ff9800;
+      --orange: #FF006C;
     }
     body {
       background: var(--bg);
@@ -382,11 +382,11 @@
     }
     .btn-purple:hover { background: #7b1fa2; }
     .btn-warning {
-      background: var(--orange);
+      background: var(--accent);
       border: none;
       color: #fff;
     }
-    .btn-warning:hover { background: #e68900; }
+    .btn-warning:hover { background: #d6005c; }
     .btn-sm {
       padding: 0.2rem 0.8rem;
       font-size: 0.75rem;
@@ -428,7 +428,7 @@
       cursor: default;
     }
     .badge-upcoming {
-      background: var(--orange);
+      background: var(--accent);
       color: #fff;
       font-size: 0.6rem;
       padding: 0.1rem 0.5rem;
@@ -449,8 +449,8 @@
       border-radius: 12px;
     }
     .badge-oav {
-      background: var(--orange);
-      color: #0b0a0c;
+      background: var(--accent);
+      color: #fff;
       font-size: 0.6rem;
       padding: 0.1rem 0.5rem;
       border-radius: 12px;
@@ -478,7 +478,7 @@
       border-radius: 12px;
     }
     .badge-newrelease {
-      background: var(--orange);
+      background: var(--accent);
       color: #fff;
       font-size: 0.6rem;
       padding: 0.1rem 0.5rem;
@@ -757,7 +757,7 @@
     .card:hover {
         transform: translateY(-4px);
         border-color: var(--accent);
-        box-shadow: 0 8px 25px rgba(255,107,157,0.15);
+        box-shadow: 0 8px 25px rgba(255,0,108,0.15);
     }
 
     .card .thumb {
@@ -797,7 +797,7 @@
         position: absolute;
         top: 4px;
         left: 4px;
-        background: var(--orange);
+        background: var(--accent);
         color: #fff;
         font-size: 0.6rem;
         padding: 0.1rem 0.5rem;
@@ -830,8 +830,8 @@
         position: absolute;
         bottom: 4px;
         left: 4px;
-        background: var(--orange);
-        color: #0b0a0c;
+        background: var(--accent);
+        color: #fff;
         font-size: 0.6rem;
         padding: 0.1rem 0.5rem;
         border-radius: 12px;
@@ -875,7 +875,7 @@
         position: absolute;
         top: 4px;
         left: 4px;
-        background: var(--orange);
+        background: var(--accent);
         color: #fff;
         font-size: 0.6rem;
         padding: 0.1rem 0.5rem;
@@ -943,7 +943,7 @@
     }
 
     .card .details .release-date {
-        color: var(--orange);
+        color: var(--accent);
         font-weight: 600;
     }
 
@@ -1116,7 +1116,7 @@
       margin-right: 6px;
     }
     .detail-page .detail-info .meta-item.release-date {
-      background: var(--orange);
+      background: var(--accent);
       color: #fff;
     }
     .detail-page .detail-info .summary {
@@ -1220,8 +1220,8 @@
     }
     .recommend-btn {
       background: transparent;
-      border: 1px solid var(--accent2);
-      color: var(--accent2);
+      border: 1px solid var(--accent);
+      color: var(--accent);
       padding: 0.3rem 1rem;
       border-radius: 40px;
       cursor: pointer;
@@ -1231,12 +1231,12 @@
       gap: 6px;
     }
     .recommend-btn:hover {
-      background: var(--accent2);
-      color: #0b0a0c;
+      background: var(--accent);
+      color: #fff;
     }
     .recommend-btn.recommended {
-      background: var(--accent2);
-      color: #0b0a0c;
+      background: var(--accent);
+      color: #fff;
     }
     .recommend-btn:disabled {
       opacity: 0.5;
@@ -2385,7 +2385,7 @@
       margin-bottom: 1rem;
     }
     .upcoming-page .upcoming-header h2 {
-      color: var(--orange);
+      color: var(--accent);
     }
     .movies-page .movies-header h2 {
       color: var(--purple);
@@ -2397,7 +2397,7 @@
       color: var(--accent);
     }
     .ovas-page .ovas-header h2 {
-      color: var(--orange);
+      color: var(--accent);
     }
     @media (max-width:700px) {
       .header { flex-direction: column; align-items: stretch; }
@@ -4304,7 +4304,7 @@
   const ADMIN_BASE_CODE = 'ADMIN';
   const ADMIN_SUFFIX = 'ANIME';
   const DRAGON_SVG = 'data:image/svg+xml,' + encodeURIComponent(
-    '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><path d="M50 10 C20 10 10 40 10 60 C10 80 30 90 50 90 C70 90 90 80 90 60 C90 40 80 10 50 10 Z" fill="%23ff6b9d"/><path d="M50 25 C35 25 25 40 25 55 C25 70 35 80 50 80 C65 80 75 70 75 55 C75 40 65 25 50 25 Z" fill="%23ffb347"/><path d="M50 40 L40 55 L60 55 Z" fill="%23fff"/></svg>'
+    '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><path d="M50 10 C20 10 10 40 10 60 C10 80 30 90 50 90 C70 90 90 80 90 60 C90 40 80 10 50 10 Z" fill="%23FF006C"/><path d="M50 25 C35 25 25 40 25 55 C25 70 35 80 50 80 C65 80 75 70 75 55 C75 40 65 25 50 25 Z" fill="%2306F980"/><path d="M50 40 L40 55 L60 55 Z" fill="%23fff"/></svg>'
   );
 
   const ERROR_MESSAGES = {
@@ -4568,8 +4568,8 @@
       const settingsDisplayName = ref('');
       const settingsPassword = ref('');
       const newCategory = ref('');
-      const colorPalette = ['#ff6b9d', '#f44336', '#ff9800', '#ffeb3b', '#4caf50', '#2196f3', '#9c27b0', '#00bcd4'];
-      const selectedColor = ref('#ff6b9d');
+      const colorPalette = ['#FF006C', '#06F980', '#f44336', '#ff9800', '#ffeb3b', '#4caf50', '#2196f3', '#9c27b0', '#00bcd4'];
+      const selectedColor = ref('#FF006C');
       const userToDelete = ref('');
       const upcomingSearch = ref('');
       const upcomingPage = ref(1);
@@ -6913,9 +6913,9 @@
       const resetSettingsCustomize = () => {
         showConfirm('Réinitialisation', 'Réinitialiser toutes les préférences ?').then(confirmed => {
           if (confirmed) {
-            selectedColor.value = '#ff6b9d';
+            selectedColor.value = '#FF006C';
             darkMode.value = true;
-            document.documentElement.style.setProperty('--accent', '#ff6b9d');
+            document.documentElement.style.setProperty('--accent', '#FF006C');
             document.body.classList.remove('light');
             localStorage.setItem('skaymog_theme', 'dark');
             saveAll();
