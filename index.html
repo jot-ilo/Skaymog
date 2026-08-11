@@ -3034,10 +3034,10 @@
         <button class="btn btn-primary btn-lg" @click="goProposalAnime" style="min-width:200px;justify-content:center;">
           <i class="fas fa-tv"></i> Proposer une série
         </button>
-        <button class="btn btn-purple btn-lg" @click="goProposalMovie" style="min-width:200px;justify-content:center;">
+        <button class="btn btn-primary btn-lg" @click="goProposalMovie" style="min-width:200px;justify-content:center;">
           <i class="fas fa-film"></i> Proposer un film
         </button>
-        <button class="btn btn-warning btn-lg" @click="goProposalOav" style="min-width:200px;justify-content:center;">
+        <button class="btn btn-primary btn-lg" @click="goProposalOav" style="min-width:200px;justify-content:center;">
           <i class="fas fa-play-circle"></i> Proposer un OAV
         </button>
       </div>
@@ -3248,9 +3248,9 @@
           <button class="btn admin-btn" @click="adminPage='add-series';resetAdminForm()"><i class="fas fa-plus"></i> Ajouter une série</button>
           <button class="btn admin-btn" @click="adminPage='add-movie';resetAdminForm()"><i class="fas fa-plus"></i> Ajouter un film</button>
           <button class="btn admin-btn" @click="adminPage='add-oav';resetAdminForm()"><i class="fas fa-plus"></i> Ajouter un OAV</button>
-          <button class="btn admin-btn danger" @click="adminPage='delete-items'"><i class="fas fa-trash"></i> Supprimer des animés</button>
-          <button class="btn admin-btn success" @click="adminPage='add-category'"><i class="fas fa-tag"></i> Ajouter une catégorie</button>
-          <button class="btn admin-btn danger" @click="adminPage='delete-user'"><i class="fas fa-user-minus"></i> Supprimer un utilisateur</button>
+          <button class="btn admin-btn" @click="adminPage='delete-items'"><i class="fas fa-trash"></i> Supprimer des animés</button>
+          <button class="btn admin-btn" @click="adminPage='add-category'"><i class="fas fa-tag"></i> Ajouter une catégorie</button>
+          <button class="btn admin-btn" @click="adminPage='delete-user'"><i class="fas fa-user-minus"></i> Supprimer un utilisateur</button>
           <button class="btn admin-btn info" @click="adminPage='reports'"><i class="fas fa-flag"></i> Signalements</button>
         </div>
         
@@ -4088,7 +4088,7 @@
         </div>
         <div class="you-actions">
           <button class="btn btn-primary" @click="goToMyProfile"><i class="fas fa-user-edit"></i> Modifier le profil</button>
-          <button class="btn btn-primary" @click="logout"><i class="fas fa-sign-out-alt"></i> Déconnexion</button>
+          <button class="btn btn-success" @click="logout"><i class="fas fa-sign-out-alt"></i> Déconnexion</button>
         </div>
       </div>
 
