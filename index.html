@@ -58,7 +58,6 @@
   </script>
 
   <style>
-    /* TOAST */
     .toast-container {
       position: fixed;
       top: 20px;
@@ -272,6 +271,13 @@
       padding: 0.1rem 0.6rem;
       border-radius: 20px;
       border: 1px solid var(--border);
+    }
+    .header-left {
+      display: flex;
+      align-items: center;
+      gap: 0.8rem;
+      flex-wrap: wrap;
+      z-index: 1;
     }
     .header-right {
       display: flex;
@@ -2390,6 +2396,7 @@
     @media (max-width:700px) {
       .header { flex-direction: column; align-items: stretch; }
       .header-right { justify-content: center; }
+      .header-left { justify-content: center; }
       .grid { grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 1rem; }
       .landing h1 { font-size: 2.5rem; }
       .landing .buttons .btn { width: 100%; justify-content: center; }
@@ -2646,18 +2653,21 @@
     </div>
 
     <!-- HEADER -->
-    <header class="header" v-if="currentPage !== 'landing' && currentPage !== 'login' && currentPage !== 'register' && currentPage !== 'admin-code' && currentPage !== 'licence' && currentPage !== 'detail'">
-      <div class="logo" @click="goHome">
-        <i class="fas fa-dragon"></i> SKAYMOG <span class="badge">{{ allItems.length }}</span>
-      </div>
-      <div class="header-right">
+    <header class="header" v-if="currentPage !== 'landing' && currentPage !== 'login' && currentPage !== 'register' && currentPage !== 'admin-code' && currentPage !== 'licence' && currentPage !== 'detail' && currentPage !== 'proposal-anime' && currentPage !== 'proposal-movie' && currentPage !== 'proposal-oav'">
+      <div class="header-left">
+        <div class="logo" @click="goHome">
+          <i class="fas fa-dragon"></i> SKAYMOG <span class="badge">{{ allItems.length }}</span>
+        </div>
         <button class="btn btn-sm" @click="goHome"><i class="fas fa-home"></i> Accueil</button>
-        
         <div class="theme-toggle" @click="toggleTheme">
           <i :class="darkMode ? 'fas fa-sun' : 'fas fa-moon'"></i>
           {{ darkMode ? 'Clair' : 'Sombre' }}
         </div>
-
+        <button class="btn btn-sm" @click="goProfile" v-if="currentUser && currentUser.role !== 'guest'"><i class="fas fa-user"></i> Profil</button>
+        <button class="btn btn-sm btn-primary" @click="goToAdminPage" v-if="currentUser && currentUser.role === 'admin'"><i class="fas fa-crown"></i> Admin</button>
+        <button class="btn btn-sm btn-primary" @click="goProposalChoice" v-else-if="currentUser && currentUser.role === 'user'"><i class="fas fa-plus"></i> Proposer</button>
+      </div>
+      <div class="header-right">
         <div class="user-info" @click="goProfile">
           <div class="avatar">
             <img v-if="currentUser && currentUser.avatar" :src="currentUser.avatar" alt="">
@@ -2667,11 +2677,9 @@
           <span class="role-badge" v-if="currentUser && currentUser.role === 'admin'">Admin</span>
           <span class="role-badge guest" v-else-if="currentUser && currentUser.role === 'guest'">Invité</span>
         </div>
-
         <button class="btn btn-sm" @click="logoutGuest" v-if="currentUser && currentUser.role === 'guest'">
           <i class="fas fa-sign-out-alt"></i> Quitter
         </button>
-
         <button class="btn btn-sm" style="background:var(--accent);color:#0b0a0c;border:none;" @click="openSettings">
           <i class="fas fa-cog"></i>
         </button>
@@ -2812,7 +2820,7 @@
             <span class="meta-item" v-if="selectedItem.type === 'oav'"><i class="fas fa-play-circle"></i> {{ selectedItem.oavType || 'OAV' }}</span>
             <span class="meta-item" v-if="selectedItem.type === 'anime' && selectedItem.saison"><i class="fas fa-layer-group"></i> Saison {{ selectedItem.saison }}</span>
             <span class="meta-item" v-if="selectedItem.films && selectedItem.type === 'anime'"><i class="fas fa-video"></i> {{ selectedItem.films }} films</span>
-            <span class="meta-item" v-if="selectedItem.studio"><i class="fas fa-building"></i> {{ selectedItem.studio }}</span>
+            <span class="meta-item" v-if="selectedItem.studio"><i class="fas fa-building"></i> {{ selectedItem.studio || 'Inconnu' }}</span>
             <span class="meta-item" v-if="selectedItem.type === 'anime' && selectedItem.category"><i class="fas fa-tag"></i> {{ selectedItem.category }}</span>
             <span class="meta-item" v-if="selectedItem.type === 'movie'"><i class="fas fa-tag"></i> Film</span>
             <span class="meta-item" v-if="selectedItem.type === 'oav'"><i class="fas fa-tag"></i> OAV</span>
@@ -2874,6 +2882,219 @@
           </div>
         </div>
       </div>
+    </div>
+
+    <!-- PROPOSAL CHOICE -->
+    <div v-else-if="currentPage === 'proposal-choice' && currentUser && currentUser.role === 'user'" class="proposal-page">
+      <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:0.5rem;margin-bottom:1rem;">
+        <h2><i class="fas fa-lightbulb"></i> Proposer un animé</h2>
+        <button class="btn btn-sm" @click="goHome"><i class="fas fa-arrow-left"></i> Retour</button>
+      </div>
+      <p class="subtitle">Choisissez le type d'animé que vous souhaitez proposer.</p>
+      <div style="display:flex;flex-wrap:wrap;gap:1rem;justify-content:center;margin-top:2rem;">
+        <button class="btn btn-primary btn-lg" @click="goProposalAnime" style="min-width:200px;justify-content:center;">
+          <i class="fas fa-tv"></i> Proposer une série
+        </button>
+        <button class="btn btn-purple btn-lg" @click="goProposalMovie" style="min-width:200px;justify-content:center;">
+          <i class="fas fa-film"></i> Proposer un film
+        </button>
+        <button class="btn btn-warning btn-lg" @click="goProposalOav" style="min-width:200px;justify-content:center;">
+          <i class="fas fa-play-circle"></i> Proposer un OAV
+        </button>
+      </div>
+    </div>
+
+    <!-- PROPOSAL ANIME -->
+    <div v-else-if="currentPage === 'proposal-anime' && currentUser && currentUser.role === 'user'" class="proposal-page">
+      <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:0.5rem;margin-bottom:1rem;">
+        <h2><i class="fas fa-tv"></i> Proposer une série</h2>
+        <button class="btn btn-sm" @click="goProposalChoice"><i class="fas fa-arrow-left"></i> Retour</button>
+      </div>
+      <p class="subtitle">Soumettez une série à la communauté. Un administrateur validera votre proposition.</p>
+      <div class="field">
+        <label>Titre *</label>
+        <input v-model="proposalForm.title" placeholder="Titre">
+      </div>
+      <div class="field">
+        <label>Épisodes</label>
+        <input v-model.number="proposalForm.ep" type="number" placeholder="24">
+      </div>
+      <div class="field">
+        <label>Studio / Réalisateur</label>
+        <input v-model="proposalForm.studio" placeholder="Studio">
+      </div>
+      <div class="field">
+        <label>Saison</label>
+        <input v-model.number="proposalForm.saison" type="number" placeholder="1">
+      </div>
+      <div class="field">
+        <label>Catégorie</label>
+        <select v-model="proposalForm.category">
+          <option v-for="c in categories" :value="c">{{c}}</option>
+          <option value="">Aucune</option>
+        </select>
+      </div>
+      <div class="field">
+        <label>Année</label>
+        <input type="date" v-model="proposalForm.releaseDate" />
+      </div>
+      <div class="field">
+        <label>Image grille (16:9)</label>
+        <div style="display:flex;align-items:center;gap:1rem;flex-wrap:wrap;">
+          <div class="image-preview" style="position:relative;width:120px;height:67.5px;background:var(--bg3);border-radius:8px;border:1px solid var(--border);overflow:hidden;">
+            <img v-if="proposalForm.thumb" :src="proposalForm.thumb" style="width:100%;height:100%;object-fit:cover;">
+            <i v-else class="fas fa-image" style="display:flex;align-items:center;justify-content:center;width:100%;height:100%;color:var(--text2);"></i>
+            <button class="edit-img-btn" @click.stop="triggerProposalImageUpload('thumb')" style="position:absolute;top:4px;right:4px;background:var(--accent);border:none;border-radius:50%;width:24px;height:24px;color:#fff;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:0.7rem;">
+              <i class="fas fa-pen"></i>
+            </button>
+          </div>
+          <input type="file" @change="handleProposalImage('thumb', $event)" accept="image/*" style="display:none;" ref="propThumbInput">
+          <button class="btn btn-sm" @click="$refs.propThumbInput.click()"><i class="fas fa-upload"></i> Changer</button>
+        </div>
+      </div>
+      <div class="field">
+        <label>Image de détails (9:16)</label>
+        <div style="display:flex;align-items:center;gap:1rem;flex-wrap:wrap;">
+          <div class="image-preview" style="position:relative;width:67.5px;height:120px;background:var(--bg3);border-radius:8px;border:1px solid var(--border);overflow:hidden;">
+            <img v-if="proposalForm.thumbPortrait" :src="proposalForm.thumbPortrait" style="width:100%;height:100%;object-fit:cover;">
+            <i v-else class="fas fa-image" style="display:flex;align-items:center;justify-content:center;width:100%;height:100%;color:var(--text2);"></i>
+            <button class="edit-img-btn" @click.stop="triggerProposalImageUpload('thumbPortrait')" style="position:absolute;top:4px;right:4px;background:var(--accent);border:none;border-radius:50%;width:24px;height:24px;color:#fff;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:0.7rem;">
+              <i class="fas fa-pen"></i>
+            </button>
+          </div>
+          <input type="file" @change="handleProposalImage('thumbPortrait', $event)" accept="image/*" style="display:none;" ref="propPortraitInput">
+          <button class="btn btn-sm" @click="$refs.propPortraitInput.click()"><i class="fas fa-upload"></i> Changer</button>
+        </div>
+      </div>
+      <div class="field">
+        <label>Résumé</label>
+        <textarea v-model="proposalForm.summary" placeholder="Résumé..."></textarea>
+      </div>
+      <button class="btn btn-primary btn-block" @click="submitProposalAnime"><i class="fas fa-paper-plane"></i> Soumettre la proposition</button>
+    </div>
+
+    <!-- PROPOSAL MOVIE -->
+    <div v-else-if="currentPage === 'proposal-movie' && currentUser && currentUser.role === 'user'" class="proposal-page">
+      <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:0.5rem;margin-bottom:1rem;">
+        <h2><i class="fas fa-film"></i> Proposer un film</h2>
+        <button class="btn btn-sm" @click="goProposalChoice"><i class="fas fa-arrow-left"></i> Retour</button>
+      </div>
+      <p class="subtitle">Soumettez un film à la communauté. Un administrateur validera votre proposition.</p>
+      <div class="field">
+        <label>Titre *</label>
+        <input v-model="proposalForm.title" placeholder="Titre">
+      </div>
+      <div class="field">
+        <label>Parties</label>
+        <input v-model.number="proposalForm.parts" type="number" placeholder="1">
+      </div>
+      <div class="field">
+        <label>Studio / Réalisateur</label>
+        <input v-model="proposalForm.studio" placeholder="Studio">
+      </div>
+      <div class="field">
+        <label>Année</label>
+        <input type="date" v-model="proposalForm.releaseDate" />
+      </div>
+      <div class="field">
+        <label>Image grille (16:9)</label>
+        <div style="display:flex;align-items:center;gap:1rem;flex-wrap:wrap;">
+          <div class="image-preview" style="position:relative;width:120px;height:67.5px;background:var(--bg3);border-radius:8px;border:1px solid var(--border);overflow:hidden;">
+            <img v-if="proposalForm.thumb" :src="proposalForm.thumb" style="width:100%;height:100%;object-fit:cover;">
+            <i v-else class="fas fa-image" style="display:flex;align-items:center;justify-content:center;width:100%;height:100%;color:var(--text2);"></i>
+            <button class="edit-img-btn" @click.stop="triggerProposalImageUpload('thumb')" style="position:absolute;top:4px;right:4px;background:var(--accent);border:none;border-radius:50%;width:24px;height:24px;color:#fff;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:0.7rem;">
+              <i class="fas fa-pen"></i>
+            </button>
+          </div>
+          <input type="file" @change="handleProposalImage('thumb', $event)" accept="image/*" style="display:none;" ref="propThumbInput">
+          <button class="btn btn-sm" @click="$refs.propThumbInput.click()"><i class="fas fa-upload"></i> Changer</button>
+        </div>
+      </div>
+      <div class="field">
+        <label>Image de détails (9:16)</label>
+        <div style="display:flex;align-items:center;gap:1rem;flex-wrap:wrap;">
+          <div class="image-preview" style="position:relative;width:67.5px;height:120px;background:var(--bg3);border-radius:8px;border:1px solid var(--border);overflow:hidden;">
+            <img v-if="proposalForm.thumbPortrait" :src="proposalForm.thumbPortrait" style="width:100%;height:100%;object-fit:cover;">
+            <i v-else class="fas fa-image" style="display:flex;align-items:center;justify-content:center;width:100%;height:100%;color:var(--text2);"></i>
+            <button class="edit-img-btn" @click.stop="triggerProposalImageUpload('thumbPortrait')" style="position:absolute;top:4px;right:4px;background:var(--accent);border:none;border-radius:50%;width:24px;height:24px;color:#fff;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:0.7rem;">
+              <i class="fas fa-pen"></i>
+            </button>
+          </div>
+          <input type="file" @change="handleProposalImage('thumbPortrait', $event)" accept="image/*" style="display:none;" ref="propPortraitInput">
+          <button class="btn btn-sm" @click="$refs.propPortraitInput.click()"><i class="fas fa-upload"></i> Changer</button>
+        </div>
+      </div>
+      <div class="field">
+        <label>Résumé</label>
+        <textarea v-model="proposalForm.summary" placeholder="Résumé..."></textarea>
+      </div>
+      <button class="btn btn-primary btn-block" @click="submitProposalMovie"><i class="fas fa-paper-plane"></i> Soumettre la proposition</button>
+    </div>
+
+    <!-- PROPOSAL OAV -->
+    <div v-else-if="currentPage === 'proposal-oav' && currentUser && currentUser.role === 'user'" class="proposal-page">
+      <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:0.5rem;margin-bottom:1rem;">
+        <h2><i class="fas fa-play-circle"></i> Proposer un OAV</h2>
+        <button class="btn btn-sm" @click="goProposalChoice"><i class="fas fa-arrow-left"></i> Retour</button>
+      </div>
+      <p class="subtitle">Soumettez un OAV à la communauté. Un administrateur validera votre proposition.</p>
+      <div class="field">
+        <label>Titre *</label>
+        <input v-model="proposalForm.title" placeholder="Titre">
+      </div>
+      <div class="field">
+        <label>Type OAV</label>
+        <select v-model="proposalForm.oavType">
+          <option value="OAV">OAV</option>
+          <option value="Épisode spécial">Épisode spécial</option>
+          <option value="Live Action">Live Action</option>
+        </select>
+      </div>
+      <div class="field">
+        <label>Nombre de parties / épisodes</label>
+        <input v-model.number="proposalForm.parts" type="number" placeholder="1">
+      </div>
+      <div class="field">
+        <label>Studio / Réalisateur</label>
+        <input v-model="proposalForm.studio" placeholder="Studio">
+      </div>
+      <div class="field">
+        <label>Année</label>
+        <input type="date" v-model="proposalForm.releaseDate" />
+      </div>
+      <div class="field">
+        <label>Image grille (16:9)</label>
+        <div style="display:flex;align-items:center;gap:1rem;flex-wrap:wrap;">
+          <div class="image-preview" style="position:relative;width:120px;height:67.5px;background:var(--bg3);border-radius:8px;border:1px solid var(--border);overflow:hidden;">
+            <img v-if="proposalForm.thumb" :src="proposalForm.thumb" style="width:100%;height:100%;object-fit:cover;">
+            <i v-else class="fas fa-image" style="display:flex;align-items:center;justify-content:center;width:100%;height:100%;color:var(--text2);"></i>
+            <button class="edit-img-btn" @click.stop="triggerProposalImageUpload('thumb')" style="position:absolute;top:4px;right:4px;background:var(--accent);border:none;border-radius:50%;width:24px;height:24px;color:#fff;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:0.7rem;">
+              <i class="fas fa-pen"></i>
+            </button>
+          </div>
+          <input type="file" @change="handleProposalImage('thumb', $event)" accept="image/*" style="display:none;" ref="propThumbInput">
+          <button class="btn btn-sm" @click="$refs.propThumbInput.click()"><i class="fas fa-upload"></i> Changer</button>
+        </div>
+      </div>
+      <div class="field">
+        <label>Image de détails (9:16)</label>
+        <div style="display:flex;align-items:center;gap:1rem;flex-wrap:wrap;">
+          <div class="image-preview" style="position:relative;width:67.5px;height:120px;background:var(--bg3);border-radius:8px;border:1px solid var(--border);overflow:hidden;">
+            <img v-if="proposalForm.thumbPortrait" :src="proposalForm.thumbPortrait" style="width:100%;height:100%;object-fit:cover;">
+            <i v-else class="fas fa-image" style="display:flex;align-items:center;justify-content:center;width:100%;height:100%;color:var(--text2);"></i>
+            <button class="edit-img-btn" @click.stop="triggerProposalImageUpload('thumbPortrait')" style="position:absolute;top:4px;right:4px;background:var(--accent);border:none;border-radius:50%;width:24px;height:24px;color:#fff;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:0.7rem;">
+              <i class="fas fa-pen"></i>
+            </button>
+          </div>
+          <input type="file" @change="handleProposalImage('thumbPortrait', $event)" accept="image/*" style="display:none;" ref="propPortraitInput">
+          <button class="btn btn-sm" @click="$refs.propPortraitInput.click()"><i class="fas fa-upload"></i> Changer</button>
+        </div>
+      </div>
+      <div class="field">
+        <label>Résumé</label>
+        <textarea v-model="proposalForm.summary" placeholder="Résumé..."></textarea>
+      </div>
+      <button class="btn btn-primary btn-block" @click="submitProposalOav"><i class="fas fa-paper-plane"></i> Soumettre la proposition</button>
     </div>
 
     <!-- ADMIN PAGE -->
@@ -3004,99 +3225,6 @@
       </div>
     </div>
 
-    <!-- PROPOSAL PAGE -->
-    <div v-else-if="currentPage === 'proposal' && currentUser && currentUser.role === 'user'" class="proposal-page">
-      <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:0.5rem;margin-bottom:1rem;">
-        <h2><i class="fas fa-lightbulb"></i> Proposer un animé</h2>
-        <button class="btn btn-sm" @click="goHome"><i class="fas fa-arrow-left"></i> Retour</button>
-      </div>
-      <p class="subtitle">Soumettez un animé (série, film ou OAV) à la communauté. Un administrateur validera votre proposition.</p>
-      <div class="field">
-        <label>Type *</label>
-        <select v-model="proposalForm.type">
-          <option value="anime">Série</option>
-          <option value="movie">Film</option>
-          <option value="oav">OAV / Épisode spécial / Live Action</option>
-        </select>
-      </div>
-      <div class="field">
-        <label>Titre *</label>
-        <input v-model="proposalForm.title" placeholder="Titre">
-      </div>
-      <div class="field" v-if="proposalForm.type === 'anime'">
-        <label>Épisodes</label>
-        <input v-model.number="proposalForm.ep" type="number" placeholder="24">
-      </div>
-      <div class="field" v-if="proposalForm.type === 'movie'">
-        <label>Parties</label>
-        <input v-model.number="proposalForm.parts" type="number" placeholder="1">
-      </div>
-      <div class="field" v-if="proposalForm.type === 'oav'">
-        <label>Type OAV</label>
-        <select v-model="proposalForm.oavType">
-          <option value="OAV">OAV</option>
-          <option value="Épisode spécial">Épisode spécial</option>
-          <option value="Live Action">Live Action</option>
-        </select>
-      </div>
-      <div class="field" v-if="proposalForm.type === 'oav'">
-        <label>Nombre de parties / épisodes</label>
-        <input v-model.number="proposalForm.parts" type="number" placeholder="1">
-      </div>
-      <div class="field">
-        <label>Studio / Réalisateur</label>
-        <input v-model="proposalForm.studio" placeholder="Studio">
-      </div>
-      <div class="field" v-if="proposalForm.type === 'anime'">
-        <label>Saison</label>
-        <input v-model.number="proposalForm.saison" type="number" placeholder="1">
-      </div>
-      <div class="field" v-if="proposalForm.type === 'anime'">
-        <label>Catégorie</label>
-        <select v-model="proposalForm.category">
-          <option v-for="c in categories" :value="c">{{c}}</option>
-          <option value="">Aucune</option>
-        </select>
-      </div>
-      <div class="field">
-        <label>Année</label>
-        <input type="date" v-model="proposalForm.releaseDate" />
-      </div>
-      <div class="field">
-        <label>Image grille (16:9)</label>
-        <div style="display:flex;align-items:center;gap:1rem;flex-wrap:wrap;">
-          <div class="image-preview" style="position:relative;width:120px;height:67.5px;background:var(--bg3);border-radius:8px;border:1px solid var(--border);overflow:hidden;">
-            <img v-if="proposalForm.thumb" :src="proposalForm.thumb" style="width:100%;height:100%;object-fit:cover;">
-            <i v-else class="fas fa-image" style="display:flex;align-items:center;justify-content:center;width:100%;height:100%;color:var(--text2);"></i>
-            <button class="edit-img-btn" @click.stop="triggerProposalImageUpload('thumb')" style="position:absolute;top:4px;right:4px;background:var(--accent);border:none;border-radius:50%;width:24px;height:24px;color:#fff;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:0.7rem;">
-              <i class="fas fa-pen"></i>
-            </button>
-          </div>
-          <input type="file" @change="handleProposalImage('thumb', $event)" accept="image/*" style="display:none;" ref="propThumbInput">
-          <button class="btn btn-sm" @click="$refs.propThumbInput.click()"><i class="fas fa-upload"></i> Changer</button>
-        </div>
-      </div>
-      <div class="field">
-        <label>Image de détails (9:16)</label>
-        <div style="display:flex;align-items:center;gap:1rem;flex-wrap:wrap;">
-          <div class="image-preview" style="position:relative;width:67.5px;height:120px;background:var(--bg3);border-radius:8px;border:1px solid var(--border);overflow:hidden;">
-            <img v-if="proposalForm.thumbPortrait" :src="proposalForm.thumbPortrait" style="width:100%;height:100%;object-fit:cover;">
-            <i v-else class="fas fa-image" style="display:flex;align-items:center;justify-content:center;width:100%;height:100%;color:var(--text2);"></i>
-            <button class="edit-img-btn" @click.stop="triggerProposalImageUpload('thumbPortrait')" style="position:absolute;top:4px;right:4px;background:var(--accent);border:none;border-radius:50%;width:24px;height:24px;color:#fff;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:0.7rem;">
-              <i class="fas fa-pen"></i>
-            </button>
-          </div>
-          <input type="file" @change="handleProposalImage('thumbPortrait', $event)" accept="image/*" style="display:none;" ref="propPortraitInput">
-          <button class="btn btn-sm" @click="$refs.propPortraitInput.click()"><i class="fas fa-upload"></i> Changer</button>
-        </div>
-      </div>
-      <div class="field">
-        <label>Résumé</label>
-        <textarea v-model="proposalForm.summary" placeholder="Résumé..."></textarea>
-      </div>
-      <button class="btn btn-primary btn-block" @click="submitProposal"><i class="fas fa-paper-plane"></i> Soumettre la proposition</button>
-    </div>
-
     <!-- USER PAGE -->
     <div v-else-if="currentPage === 'user-page' && viewedUser" class="user-page">
       <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:0.5rem;margin-bottom:1rem;">
@@ -3217,7 +3345,7 @@
     </div>
 
     <!-- MAIN APP -->
-    <div v-else-if="currentPage === 'home' || currentPage === 'messages' || currentPage === 'admin-page' || currentPage === 'user-page' || currentPage === 'my-profile' || currentPage === 'proposal' || currentPage === 'profile' || currentPage === 'upcoming' || currentPage === 'movies' || currentPage === 'series' || currentPage === 'animes' || currentPage === 'ovas'">
+    <div v-else-if="currentPage === 'home' || currentPage === 'messages' || currentPage === 'admin-page' || currentPage === 'user-page' || currentPage === 'my-profile' || currentPage === 'profile' || currentPage === 'upcoming' || currentPage === 'movies' || currentPage === 'series' || currentPage === 'animes' || currentPage === 'ovas'">
       <div class="nav">
         <button class="nav-item" :class="{active:currentTab==='animes'}" @click="goAnimes">
           <i class="fas fa-home"></i> Animés
@@ -3812,7 +3940,7 @@
     </div>
 
     <!-- FOOTER -->
-    <div class="footer" v-if="currentPage !== 'landing' && currentPage !== 'login' && currentPage !== 'register' && currentPage !== 'admin-code' && currentPage !== 'licence' && currentPage !== 'detail'">
+    <div class="footer" v-if="currentPage !== 'landing' && currentPage !== 'login' && currentPage !== 'register' && currentPage !== 'admin-code' && currentPage !== 'licence' && currentPage !== 'detail' && currentPage !== 'proposal-anime' && currentPage !== 'proposal-movie' && currentPage !== 'proposal-oav' && currentPage !== 'proposal-choice'">
       <div class="footer-links">
         <a @click="goHome"><i class="fas fa-home"></i> Accueil</a>
         <a @click="currentPage='licence'"><i class="fas fa-file-contract"></i> Licence</a>
@@ -3872,7 +4000,7 @@
           <i class="fas fa-crown"></i> Admin
         </button>
         <button class="settings-tab toggle-mode" @click="toggleAdminModeFromSettings" v-if="currentUser && currentUser.role !== 'guest'">
-          <i class="fas fa-arrows-alt-h"></i> {{ currentUser.role === 'admin' ? 'Mode utilisateur' : 'Mode admin' }}
+          <i class="fas fa-arrows-alt-h"></i> {{ currentUser.role === 'admin' ? 'Mode standard' : 'Mode admin' }}
         </button>
         <button class="settings-tab" @click="confirmLogout" v-if="currentUser && currentUser.role !== 'guest'">
           <i class="fas fa-sign-out-alt"></i> Déconnexion
@@ -3959,7 +4087,7 @@
   };
 
   // ============================================================
-  // LISTE COMPLÈTE DES ANIMÉS (version simplifiée pour la taille)
+  // LISTE COMPLÈTE DES ANIMÉS
   // ============================================================
   function buildAllAnimes() {
     const allAnimes = [
@@ -4134,193 +4262,7 @@
       { title: 'Insomniacs After School', ep: 13, saison: 1, films: 1, studio: 'Liden Films', category: 'Seinen' },
       { title: 'Mysterious Disappearances', ep: 12, saison: 1, films: 0, studio: 'Zero-G', category: 'Seinen' },
       { title: 'Kowloon Generic Romance', ep: 13, saison: 1, films: 0, studio: 'Arvo Animation', category: 'Seinen' },
-      { title: 'Akiba Maid War', ep: 12, saison: 1, films: 0, studio: 'P.A.Works', category: 'Seinen' },
-      
-      // Shojo
-      { title: 'Sailor Moon', ep: 200, saison: 5, films: 5, studio: 'Toei Animation', category: 'Shojo' },
-      { title: 'Chihayafuru', ep: 75, saison: 3, films: 0, studio: 'Madhouse', category: 'Shojo' },
-      { title: 'Natsume Yuujinchou', ep: 90, saison: 7, films: 2, studio: 'Brain\'s Base / Shuka', category: 'Shojo' },
-      { title: 'Cardcaptor Sakura', ep: 70, saison: 2, films: 2, studio: 'Madhouse', category: 'Shojo' },
-      { title: 'Kageki Shoujo!!', ep: 13, saison: 1, films: 0, studio: 'PINE JAM', category: 'Shojo' },
-      { title: 'Princess Tutu', ep: 26, saison: 1, films: 0, studio: 'Hal Film Maker', category: 'Shojo' },
-      { title: 'Nodame Cantabile', ep: 45, saison: 2, films: 0, studio: 'J.C.Staff', category: 'Shojo' },
-      { title: 'Shugo Chara!', ep: 127, saison: 3, films: 1, studio: 'Satelight', category: 'Shojo' },
-      { title: 'Aikatsu!', ep: 100, saison: 1, films: 0, studio: 'Sunrise / BN Pictures', category: 'Shojo' },
-      { title: 'PriPara', ep: 140, saison: 3, films: 0, studio: 'Tatsunoko Production / Dongwoo A&E', category: 'Shojo' },
-      { title: 'Hanayamata', ep: 12, saison: 1, films: 0, studio: 'Madhouse', category: 'Shojo' },
-      { title: 'Yumeiro Patissiere', ep: 50, saison: 2, films: 0, studio: 'Studio Hibari', category: 'Shojo' },
-      { title: 'Tamayura', ep: 26, saison: 2, films: 4, studio: 'TYO Animations', category: 'Shojo' },
-      { title: 'Aria the Animation', ep: 39, saison: 3, films: 1, studio: 'J.C.Staff / Hal Film Maker', category: 'Shojo' },
-      { title: 'Non Non Biyori', ep: 36, saison: 3, films: 1, studio: 'Silver Link', category: 'Shojo' },
-      { title: 'Zombieland Saga', ep: 24, saison: 2, films: 0, studio: 'MAPPA', category: 'Shojo' },
-      { title: 'K-On!', ep: 39, saison: 2, films: 1, studio: 'Kyoto Animation', category: 'Shojo' },
-      { title: 'Anne Happy', ep: 12, saison: 1, films: 0, studio: 'Silver Link', category: 'Shojo' },
-      { title: 'Mawaru Penguindrum', ep: 24, saison: 1, films: 1, studio: 'Brain\'s Base', category: 'Shojo' },
-      { title: 'Princess Principal', ep: 12, saison: 1, films: 0, studio: 'Actas', category: 'Shojo' },
-      
-      // Isekai
-      { title: 'Re:Zero - Starting Life in Another World', ep: 50, saison: 3, films: 0, studio: 'White Fox', category: 'Isekai' },
-      { title: 'Sword Art Online', ep: 96, saison: 4, films: 3, studio: 'A-1 Pictures', category: 'Isekai' },
-      { title: 'Mushoku Tensei: Jobless Reincarnation', ep: 48, saison: 2, films: 0, studio: 'Studio Bind', category: 'Isekai' },
-      { title: 'That Time I Got Reincarnated as a Slime', ep: 60, saison: 3, films: 1, studio: 'Eight Bit', category: 'Isekai' },
-      { title: 'Overlord', ep: 52, saison: 4, films: 1, studio: 'Madhouse', category: 'Isekai' },
-      { title: 'Konosuba', ep: 20, saison: 3, films: 1, studio: 'Drive / Studio Deen', category: 'Isekai' },
-      { title: 'No Game No Life', ep: 12, saison: 1, films: 1, studio: 'Madhouse', category: 'Isekai' },
-      { title: 'The Rising of the Shield Hero', ep: 50, saison: 3, films: 0, studio: 'Kinema Citrus', category: 'Isekai' },
-      { title: 'Log Horizon', ep: 50, saison: 3, films: 0, studio: 'Satelight / Studio Deen', category: 'Isekai' },
-      { title: 'Saga of Tanya the Evil', ep: 12, saison: 1, films: 1, studio: 'NUT', category: 'Isekai' },
-      { title: 'The Eminence in Shadow', ep: 40, saison: 2, films: 0, studio: 'Nexus', category: 'Isekai' },
-      { title: 'Arifureta', ep: 25, saison: 2, films: 0, studio: 'Asread / White Fox', category: 'Isekai' },
-      { title: 'Grimgar of Fantasy and Ash', ep: 12, saison: 1, films: 0, studio: 'A-1 Pictures', category: 'Isekai' },
-      { title: 'Wise Man\'s Grandchild', ep: 12, saison: 1, films: 0, studio: 'Silver Link', category: 'Isekai' },
-      { title: 'Death March to the Parallel World', ep: 12, saison: 1, films: 0, studio: 'Silver Link', category: 'Isekai' },
-      { title: 'Isekai Cheat Magician', ep: 12, saison: 1, films: 0, studio: 'Encourage Films', category: 'Isekai' },
-      { title: 'Black Summoner', ep: 12, saison: 1, films: 0, studio: 'Satelight', category: 'Isekai' },
-      { title: 'Cautious Hero', ep: 12, saison: 1, films: 0, studio: 'White Fox', category: 'Isekai' },
-      { title: 'Restaurant to Another World', ep: 24, saison: 2, films: 0, studio: 'Silver Link', category: 'Isekai' },
-      { title: 'Ascendance of a Bookworm', ep: 36, saison: 3, films: 0, studio: 'Ajia-do', category: 'Isekai' },
-      { title: 'Kuma Kuma Kuma Bear', ep: 24, saison: 2, films: 0, studio: 'EMT Squared', category: 'Isekai' },
-      { title: 'In Another World With My Smartphone', ep: 24, saison: 2, films: 0, studio: 'Production Reed', category: 'Isekai' },
-      { title: 'So I\'m a Spider, So What?', ep: 24, saison: 1, films: 0, studio: 'Millepensee', category: 'Isekai' },
-      { title: 'The Devil is a Part-Timer!', ep: 37, saison: 2, films: 0, studio: 'White Fox', category: 'Isekai' },
-      { title: 'Isekai Quartet', ep: 24, saison: 3, films: 0, studio: 'Studio PuYUKAI', category: 'Isekai' },
-      { title: 'Faraway Paladin', ep: 24, saison: 2, films: 0, studio: 'Children\'s Playground Entertainment', category: 'Isekai' },
-      { title: 'Uncle from Another World', ep: 13, saison: 1, films: 0, studio: 'Atelier Pontdarc', category: 'Isekai' },
-      { title: 'The Executioner and Her Way of Life', ep: 12, saison: 1, films: 0, studio: 'J.C.Staff', category: 'Isekai' },
-      { title: 'My Next Life as a Villainess', ep: 24, saison: 2, films: 0, studio: 'Silver Link', category: 'Isekai' },
-      { title: 'Reincarnated as a Sword', ep: 12, saison: 1, films: 0, studio: 'C2C', category: 'Isekai' },
-      { title: 'The World\'s Finest Assassin', ep: 12, saison: 1, films: 0, studio: 'Silver Link', category: 'Isekai' },
-      { title: 'By the Grace of the Gods', ep: 24, saison: 2, films: 0, studio: 'MAHO FILM', category: 'Isekai' },
-      { title: 'She Professed Herself Pupil of the Wise Man', ep: 12, saison: 1, films: 0, studio: 'Studio A-CAT', category: 'Isekai' },
-      { title: 'The Hidden Dungeon Only I Can Enter', ep: 12, saison: 1, films: 0, studio: 'Okuruto Noboru', category: 'Isekai' },
-      { title: 'The Strongest Sage with the Weakest Crest', ep: 12, saison: 1, films: 0, studio: 'J.C.Staff', category: 'Isekai' },
-      { title: 'How Not to Summon a Demon Lord', ep: 22, saison: 2, films: 0, studio: 'Ajia-do', category: 'Isekai' },
-      { title: 'I\'m Standing on a Million Lives', ep: 24, saison: 2, films: 0, studio: 'Maho Film', category: 'Isekai' },
-      { title: 'The Fruit of Evolution', ep: 24, saison: 2, films: 0, studio: 'Hotline / feel.', category: 'Isekai' },
-      { title: 'The Dungeon of Black Company', ep: 12, saison: 1, films: 0, studio: 'Silver Link', category: 'Isekai' },
-      { title: 'The Master of Ragnarok', ep: 12, saison: 1, films: 0, studio: 'EMT Squared', category: 'Isekai' },
-      { title: 'In the Land of Leadale', ep: 12, saison: 1, films: 0, studio: 'MAHO FILM', category: 'Isekai' },
-      { title: 'Am I Actually the Strongest?', ep: 12, saison: 1, films: 0, studio: 'Staple Entertainment', category: 'Isekai' },
-      { title: 'The Great Cleric', ep: 12, saison: 1, films: 0, studio: 'Yokohama Animation Lab', category: 'Isekai' },
-      { title: 'Reborn to Master the Blade', ep: 12, saison: 1, films: 0, studio: 'Studio Comet', category: 'Isekai' },
-      { title: 'I Got a Cheat Skill in Another World', ep: 13, saison: 1, films: 0, studio: 'Millepensee', category: 'Isekai' },
-      { title: 'The Aristocrat\'s Otherworldly Adventure', ep: 12, saison: 1, films: 0, studio: 'EMT Squared', category: 'Isekai' },
-      { title: 'The Saint\'s Magic Power is Omnipotent', ep: 24, saison: 2, films: 0, studio: 'Diomeda', category: 'Isekai' },
-      { title: 'Skeleton Knight in Another World', ep: 12, saison: 1, films: 0, studio: 'Studio Kai', category: 'Isekai' },
-      { title: 'Reincarnated as a Vending Machine', ep: 12, saison: 1, films: 0, studio: 'Studio Gokumi / AXsiZ', category: 'Isekai' },
-      
-      // Romance
-      { title: 'Fruits Basket', ep: 63, saison: 3, films: 0, studio: 'TMS Entertainment', category: 'Romance' },
-      { title: 'Kimi ni Todoke', ep: 37, saison: 3, films: 0, studio: 'Production I.G', category: 'Romance' },
-      { title: 'Toradora!', ep: 25, saison: 1, films: 0, studio: 'J.C.Staff', category: 'Romance' },
-      { title: 'Golden Time', ep: 24, saison: 1, films: 0, studio: 'J.C.Staff', category: 'Romance' },
-      { title: 'Clannad', ep: 47, saison: 2, films: 1, studio: 'Kyoto Animation', category: 'Romance' },
-      { title: 'Your Lie in April', ep: 22, saison: 1, films: 0, studio: 'A-1 Pictures', category: 'Romance' },
-      { title: 'Ao Haru Ride', ep: 12, saison: 1, films: 0, studio: 'Production I.G', category: 'Romance' },
-      { title: 'Lovely Complex', ep: 24, saison: 1, films: 0, studio: 'Toei Animation', category: 'Romance' },
-      { title: 'Maid Sama!', ep: 26, saison: 1, films: 0, studio: 'J.C.Staff', category: 'Romance' },
-      { title: 'Horimiya', ep: 13, saison: 1, films: 0, studio: 'CloverWorks', category: 'Romance' },
-      { title: 'Horimiya: Piece', ep: 13, saison: 1, films: 0, studio: 'CloverWorks', category: 'Romance' },
-      { title: 'My Dress-Up Darling', ep: 12, saison: 1, films: 0, studio: 'CloverWorks', category: 'Romance' },
-      { title: 'Say I Love You', ep: 13, saison: 1, films: 0, studio: 'Zexcs', category: 'Romance' },
-      { title: 'Blue Spring Ride', ep: 12, saison: 1, films: 0, studio: 'Production I.G', category: 'Romance' },
-      { title: 'Wolf Girl & Black Prince', ep: 13, saison: 1, films: 0, studio: 'TYO Animations', category: 'Romance' },
-      { title: 'Nisekoi', ep: 32, saison: 2, films: 0, studio: 'Shaft', category: 'Romance' },
-      { title: 'Oregairu', ep: 38, saison: 3, films: 0, studio: 'Brain\'s Base / Feel', category: 'Romance' },
-      { title: 'Masamune-kun\'s Revenge', ep: 24, saison: 2, films: 0, studio: 'Silver Link', category: 'Romance' },
-      { title: 'Rent-a-Girlfriend', ep: 36, saison: 3, films: 0, studio: 'TMS Entertainment', category: 'Romance' },
-      { title: 'Domestic Girlfriend', ep: 12, saison: 1, films: 0, studio: 'Diomeda', category: 'Romance' },
-      { title: 'White Album 2', ep: 13, saison: 1, films: 0, studio: 'Satelight', category: 'Romance' },
-      { title: 'Scum\'s Wish', ep: 12, saison: 1, films: 0, studio: 'Lerche', category: 'Romance' },
-      { title: 'Honey and Clover', ep: 36, saison: 2, films: 0, studio: 'J.C.Staff', category: 'Romance' },
-      { title: 'Itazura na Kiss', ep: 25, saison: 1, films: 0, studio: 'TMS Entertainment', category: 'Romance' },
-      { title: 'Special A', ep: 24, saison: 1, films: 0, studio: 'AIC', category: 'Romance' },
-      { title: 'Kamisama Kiss', ep: 25, saison: 2, films: 0, studio: 'TMS Entertainment', category: 'Romance' },
-      { title: 'Snow White with the Red Hair', ep: 24, saison: 2, films: 0, studio: 'Bones', category: 'Romance' },
-      { title: 'Vampire Knight', ep: 26, saison: 2, films: 0, studio: 'Studio Deen', category: 'Romance' },
-      { title: 'Sukitte Ii na yo', ep: 13, saison: 1, films: 0, studio: 'Zexcs', category: 'Romance' },
-      { title: 'Orange', ep: 13, saison: 1, films: 0, studio: 'Telecom Animation Film', category: 'Romance' },
-      { title: 'Tsuki ga Kirei', ep: 12, saison: 1, films: 0, studio: 'Feel', category: 'Romance' },
-      { title: 'ReLIFE', ep: 17, saison: 1, films: 0, studio: 'TMS Entertainment', category: 'Romance' },
-      { title: 'ReLIFE Final Arc', ep: 4, saison: 1, films: 0, studio: 'TMS Entertainment', category: 'Romance' },
-      { title: 'Plastic Memories', ep: 13, saison: 1, films: 0, studio: 'Doga Kobo', category: 'Romance' },
-      { title: 'Just Because!', ep: 12, saison: 1, films: 0, studio: 'Pine Jam', category: 'Romance' },
-      { title: 'Tsurezure Children', ep: 12, saison: 1, films: 0, studio: 'Studio Gokumi', category: 'Romance' },
-      { title: 'Wotakoi', ep: 11, saison: 1, films: 0, studio: 'A-1 Pictures', category: 'Romance' },
-      { title: 'Recovery of an MMO Junkie', ep: 10, saison: 1, films: 0, studio: 'Signal.MD', category: 'Romance' },
-      { title: 'Boarding School Juliet', ep: 12, saison: 1, films: 0, studio: 'LIDENFILMS', category: 'Romance' },
-      { title: 'My Little Monster', ep: 13, saison: 1, films: 0, studio: 'Brain\'s Base', category: 'Romance' },
-      { title: 'Aharen-san wa Hakarenai', ep: 12, saison: 1, films: 0, studio: 'Felix Film', category: 'Romance' },
-      { title: 'Shikimori\'s Not Just a Cutie', ep: 12, saison: 1, films: 0, studio: 'Doga Kobo', category: 'Romance' },
-      { title: 'Kubo Won\'t Let Me Be Invisible', ep: 12, saison: 1, films: 0, studio: 'PINE JAM', category: 'Romance' },
-      { title: 'Tonikawa: Over the Moon for You', ep: 24, saison: 2, films: 0, studio: 'Seven Arcs', category: 'Romance' },
-      { title: 'Ah My Goddess', ep: 48, saison: 2, films: 0, studio: 'AIC', category: 'Romance' },
-      { title: 'The World God Only Knows', ep: 50, saison: 3, films: 0, studio: 'Manglobe', category: 'Romance' },
-      { title: 'Chobits', ep: 26, saison: 1, films: 0, studio: 'Madhouse', category: 'Romance' },
-      { title: 'Love Hina', ep: 24, saison: 1, films: 0, studio: 'Xebec', category: 'Romance' },
-      { title: 'Ai Yori Aoshi', ep: 36, saison: 2, films: 0, studio: 'J.C.Staff', category: 'Romance' },
-      { title: 'Rumbling Hearts', ep: 14, saison: 1, films: 0, studio: 'Studio Fantasia', category: 'Romance' },
-      { title: 'Kanon', ep: 24, saison: 1, films: 0, studio: 'Kyoto Animation', category: 'Romance' },
-      { title: 'Air', ep: 13, saison: 1, films: 0, studio: 'Kyoto Animation', category: 'Romance' },
-      { title: 'Ef: A Tale of Memories', ep: 12, saison: 1, films: 0, studio: 'Shaft', category: 'Romance' },
-      { title: 'Ef: A Tale of Melodies', ep: 12, saison: 1, films: 0, studio: 'Shaft', category: 'Romance' },
-      { title: 'True Tears', ep: 13, saison: 1, films: 0, studio: 'P.A.Works', category: 'Romance' },
-      { title: 'Bokura ga Ita', ep: 26, saison: 1, films: 0, studio: 'Artland', category: 'Romance' },
-      { title: 'Boys Over Flowers', ep: 51, saison: 1, films: 0, studio: 'Toei Animation', category: 'Romance' },
-      { title: 'Marmalade Boy', ep: 76, saison: 1, films: 0, studio: 'Toei Animation', category: 'Romance' },
-      { title: 'Peach Girl', ep: 25, saison: 1, films: 0, studio: 'Studio Comet', category: 'Romance' },
-      { title: 'Kare Kano', ep: 26, saison: 1, films: 0, studio: 'Gainax', category: 'Romance' },
-      { title: 'Ao no Flag', ep: 12, saison: 1, films: 0, studio: 'Graphinica', category: 'Romance' },
-      { title: 'After the Rain', ep: 12, saison: 1, films: 0, studio: 'Wit Studio', category: 'Romance' },
-      { title: 'The Angel Next Door Spoils Me Rotten', ep: 12, saison: 1, films: 0, studio: 'Project No.9', category: 'Romance' },
-      { title: 'A Couple of Cuckoos', ep: 24, saison: 2, films: 0, studio: 'Shin-Ei Animation', category: 'Romance' },
-      { title: 'Kimi no Iru Machi', ep: 12, saison: 1, films: 0, studio: 'Gonzo', category: 'Romance' },
-      { title: 'Mayo Chiki!', ep: 13, saison: 1, films: 0, studio: 'Feel', category: 'Romance' },
-      { title: 'Ojousama no Untenshitsu', ep: 12, saison: 1, films: 0, studio: 'Silver Link', category: 'Romance' },
-      { title: 'Blend S', ep: 12, saison: 1, films: 0, studio: 'A-1 Pictures', category: 'Romance' },
-      { title: 'Gamers!', ep: 12, saison: 1, films: 0, studio: 'Pine Jam', category: 'Romance' },
-      { title: 'Engaged to the Unidentified', ep: 12, saison: 1, films: 0, studio: 'Doga Kobo', category: 'Romance' },
-      { title: 'Oreshura', ep: 13, saison: 1, films: 0, studio: 'A-1 Pictures', category: 'Romance' },
-      { title: 'Masamune-kun\'s Revenge R', ep: 12, saison: 1, films: 0, studio: 'Silver Link', category: 'Romance' },
-      { title: 'Nagi no Asukara', ep: 26, saison: 1, films: 0, studio: 'P.A.Works', category: 'Romance' },
-      { title: 'The Dangers in My Heart', ep: 25, saison: 2, films: 0, studio: 'Shin-Ei Animation', category: 'Romance' },
-      { title: 'Ijiranaide Nagatoro-san', ep: 24, saison: 2, films: 0, studio: 'Telecom Animation Film', category: 'Romance' },
-      { title: 'Seishun Buta Yarou (Bunny Girl Senpai)', ep: 13, saison: 1, films: 0, studio: 'CloverWorks', category: 'Romance' },
-      { title: 'Uzaki-chan Wants to Hang Out!', ep: 24, saison: 2, films: 0, studio: 'ENGI', category: 'Romance' },
-      { title: 'The 100 Girlfriends Who Really Love You', ep: 12, saison: 1, films: 0, studio: 'Bibury Animation', category: 'Romance' },
-      { title: 'Angel Beats!', ep: 13, saison: 1, films: 0, studio: 'P.A.Works', category: 'Romance' },
-      { title: 'School Rumble', ep: 52, saison: 2, films: 0, studio: 'Studio Comet', category: 'Romance' },
-      { title: 'School Days', ep: 12, saison: 1, films: 0, studio: 'TNK', category: 'Romance' },
-      { title: 'Citrus', ep: 12, saison: 1, films: 0, studio: 'Passione', category: 'Romance' },
-      { title: 'Bloom Into You', ep: 13, saison: 1, films: 0, studio: 'Troyca', category: 'Romance' },
-      { title: 'Sakurasou no Pet na Kanojo', ep: 24, saison: 1, films: 0, studio: 'J.C.Staff', category: 'Romance' },
-      { title: 'Your Name', ep: 0, saison: 0, films: 1, studio: 'CoMix Wave Films', category: 'Romance' },
-      { title: 'Yamada-kun and the Seven Witches', ep: 12, saison: 1, films: 0, studio: 'Liden Films', category: 'Romance' },
-      { title: 'The Fragrant Flower Blooms with Dignity', ep: 13, saison: 1, films: 0, studio: 'CloverWorks', category: 'Romance' },
-      { title: 'My Love Story with Yamada-kun at Lv999', ep: 13, saison: 1, films: 0, studio: 'Madhouse', category: 'Romance' },
-      
-      // Random
-      { title: 'Fullmetal Alchemist', ep: 51, saison: 1, films: 1, studio: 'Bones', category: 'Random' },
-      { title: 'Fairy Tail', ep: 328, saison: 9, films: 2, studio: 'A-1 Pictures / CloverWorks / Satelight', category: 'Random' },
-      { title: 'Code Lyoko', ep: 97, saison: 4, films: 0, studio: 'Moonscoop', category: 'Random' },
-      { title: 'One Punch Man', ep: 24, saison: 2, films: 0, studio: 'Madhouse / J.C.Staff', category: 'Random' },
-      { title: 'Rust-Eater (Sabikui Bisco)', ep: 12, saison: 1, films: 0, studio: 'OZ', category: 'Random' },
-      { title: 'Soul Eater Not!', ep: 12, saison: 1, films: 0, studio: 'Bones', category: 'Random' },
-      { title: 'The God of High School', ep: 13, saison: 1, films: 0, studio: 'MAPPA', category: 'Random' },
-      { title: 'Kabaneri of the Iron Fortress', ep: 12, saison: 1, films: 1, studio: 'Wit Studio', category: 'Random' },
-      { title: 'L\'Atelier des Sorciers', ep: 0, saison: 0, films: 0, studio: 'TBA', category: 'Random' },
-      { title: 'Cyberpunk: Edgerunners', ep: 10, saison: 1, films: 0, studio: 'Trigger', category: 'Random' },
-      { title: 'Marriage Toxin', ep: 0, saison: 0, films: 0, studio: 'TBA', category: 'Random' },
-      { title: 'Détective Conan', ep: 1100, saison: 0, films: 27, studio: 'TMS Entertainment', category: 'Random' },
-      { title: 'Baki Dou', ep: 39, saison: 2, films: 0, studio: 'TMS Entertainment', category: 'Random' },
-      { title: 'Classroom of the Elite', ep: 39, saison: 3, films: 0, studio: 'Lerche', category: 'Random' },
-      { title: 'The Daily Life of the Immortal King', ep: 48, saison: 4, films: 0, studio: 'Haoliners Animation', category: 'Random' },
-      { title: 'Attack on Titan', ep: 94, saison: 4, films: 0, studio: 'Wit Studio / MAPPA', category: 'Random' },
-      { title: 'In the Clear Moonlit Dusk', ep: 0, saison: 0, films: 0, studio: 'TBA', category: 'Random' },
-      { title: 'Spy × Family', ep: 37, saison: 2, films: 0, studio: 'Wit Studio / CloverWorks', category: 'Random' },
-      { title: 'Demon of the Shadow Realm', ep: 0, saison: 0, films: 0, studio: 'TBA', category: 'Random' },
-      { title: 'Baki Hanma', ep: 39, saison: 2, films: 0, studio: 'TMS Entertainment', category: 'Random' },
-      { title: 'Mob Psycho 100', ep: 37, saison: 3, films: 0, studio: 'Bones', category: 'Random' }
+      { title: 'Akiba Maid War', ep: 12, saison: 1, films: 0, studio: 'P.A.Works', category: 'Seinen' }
     ];
     
     return allAnimes.map((a, i) => ({
@@ -4629,15 +4571,6 @@
         return users.value.filter(u => u.username.toLowerCase().includes(q) || (u.displayName && u.displayName.toLowerCase().includes(q)));
       });
 
-      const categoryStats = computed(() => {
-        const stats = {};
-        publishedAnimes.value.forEach(a => {
-          const cat = a.category || 'Non catégorisé';
-          stats[cat] = (stats[cat] || 0) + 1;
-        });
-        return stats;
-      });
-
       const likedCount = computed(() => {
         if (!currentUser.value) return 0;
         return allPublished.value.filter(item => item.likes && item.likes.includes(currentUser.value.id) && !isUpcoming(item) && item.type !== 'oav').length;
@@ -4743,12 +4676,6 @@
       const getUserName = (userId) => {
         const user = users.value.find(u => u.id === userId);
         return user ? (user.displayName || user.username) : 'Inconnu';
-      };
-      const getUserWatchedCount = (userId) => {
-        if (currentUser.value && userId === currentUser.value.id) {
-          return watchedList.value.length;
-        }
-        return 0;
       };
       const getUserPublishedCount = (userId) => {
         return allPublished.value.filter(item => item.proposedBy === userId || item.createdBy === userId).length;
@@ -5742,9 +5669,31 @@
         selectedItem.value = { ...created };
         showToast('Cet animé est maintenant dans le catalogue.', 'success');
       };
-      const goProposalPage = () => {
-        currentPage.value = 'proposal';
+      
+      const goProposalChoice = () => {
+        currentPage.value = 'proposal-choice';
         proposalForm.value = { type: 'anime', title: '', ep: 0, parts: 1, saison: 1, studio: '', category: '', oavType: 'OAV',
+          thumb: '', thumbPortrait: '', summary: '', releaseDate: '' };
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      };
+      
+      const goProposalAnime = () => {
+        currentPage.value = 'proposal-anime';
+        proposalForm.value = { type: 'anime', title: '', ep: 0, parts: 1, saison: 1, studio: '', category: '', oavType: 'OAV',
+          thumb: '', thumbPortrait: '', summary: '', releaseDate: '' };
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      };
+      
+      const goProposalMovie = () => {
+        currentPage.value = 'proposal-movie';
+        proposalForm.value = { type: 'movie', title: '', ep: 0, parts: 1, saison: 1, studio: '', category: '', oavType: 'OAV',
+          thumb: '', thumbPortrait: '', summary: '', releaseDate: '' };
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      };
+      
+      const goProposalOav = () => {
+        currentPage.value = 'proposal-oav';
+        proposalForm.value = { type: 'oav', title: '', ep: 0, parts: 1, saison: 1, studio: '', category: '', oavType: 'OAV',
           thumb: '', thumbPortrait: '', summary: '', releaseDate: '' };
         window.scrollTo({ top: 0, behavior: 'smooth' });
       };
@@ -5835,10 +5784,6 @@
         showUserPublished.value = true;
         showUserWatched.value = false;
         window.scrollTo({ top: 0, behavior: 'smooth' });
-      };
-      const viewUserWatched = () => {
-        showUserWatched.value = !showUserWatched.value;
-        showUserPublished.value = false;
       };
       const viewUserPublished = () => {
         showUserPublished.value = !showUserPublished.value;
@@ -6064,6 +6009,22 @@
       const addOvaProposal = (prop) => addItem(prop, ovaProposals);
       const updateOvaProposal = (id, data) => updateItem(id, data, ovaProposals);
       const deleteOvaProposal = (id) => deleteItem(id, ovaProposals);
+
+      // --- SUBMIT PROPOSALS ---
+      const submitProposalAnime = () => {
+        proposalForm.value.type = 'anime';
+        submitProposal();
+      };
+      
+      const submitProposalMovie = () => {
+        proposalForm.value.type = 'movie';
+        submitProposal();
+      };
+      
+      const submitProposalOav = () => {
+        proposalForm.value.type = 'oav';
+        submitProposal();
+      };
 
       // --- ADMIN FORM ---
       const resetAdminForm = () => {
@@ -6755,7 +6716,7 @@
             updatedAt: firebase.firestore.FieldValue.serverTimestamp()
           }, { merge: true });
           if (newRole !== 'admin') currentPage.value = 'main';
-          showToast(`Mode ${newRole === 'admin' ? 'administrateur' : 'standard'} activé`, 'success');
+          showToast(`Mode ${newRole === 'admin' ? 'standard' : 'admin'} activé`, 'success');
         } catch (e) {
           console.error('Erreur sauvegarde du rôle :', e);
           showToast('Impossible de sauvegarder le changement de mode.', 'error');
@@ -6987,18 +6948,19 @@
         ovaItems, ovaTotalPages, paginatedOvas,
         allProposals, proposalList, proposalTotalPages, paginatedProposals,
         upcomingFiltered, upcomingTotalPages, paginatedUpcoming,
-        filteredUsers, categoryStats, likedCount, currentListItems, userPublishedItems,
+        filteredUsers, likedCount, currentListItems, userPublishedItems,
         chatUsers, totalUnread, contextMenuVisible, contextMenuX, contextMenuY, contextMenuTargetLists,
         makeCompositeId, getId, getType, getItem, isWatched, isUpcoming,
         formatDate, formatDateDisplay, formatFollowers, getUserName,
-        getUserWatchedCount, getUserPublishedCount, isFriend, getMyFriendsCount,
+        getUserPublishedCount, isFriend, getMyFriendsCount,
         isUserOnline, getChatMessages, getLastMessage, getUnreadCount,
         startChat, openChat, sendMessage, sendAudioMessage, toggleRecording,
         startTyping, stopTyping, isTyping, formatTime, scrollToBottom,
         handleLogin, handleRegister, handleAdminCode, skipAdminCode, loginAsGuest, logout, logoutGuest,
         goHome, goAnimes, goSeries, goMovies, goOvas, goLists, goProposals, goUsers, goMessages, goProfile, goUpcoming, goNewUpcomingPage,
-        goProposalPage, goToDetail, goBackFromDetail, goToMyProfile, goToUserPage, goBackFromUserPage,
-        goToAdminPage, viewMyWatched, viewMyPublished, viewUserWatched, viewUserPublished,
+        goProposalChoice, goProposalAnime, goProposalMovie, goProposalOav,
+        goToDetail, goBackFromDetail, goToMyProfile, goToUserPage, goBackFromUserPage,
+        goToAdminPage, viewMyWatched, viewMyPublished, viewUserPublished,
         resetAnimePage, resetSeriesPage, resetProposalPage, resetUpcomingPage, resetMoviePage, resetOvaPage,
         selectAnimeCategory, selectSeriesCategory,
         toggleTheme, addAnime, addMovie, addOva, updateAnime, updateMovie, updateOva, deleteAnime, deleteMovie, deleteOva,
@@ -7006,7 +6968,7 @@
         toggleLike, toggleWatched, addToWatchList, removeFromList, createList, deleteList, addToCustomList,
         isRecommended, getRecommendCount, toggleRecommend, getUserRecommendations,
         isFollowing, getFollowersCount, toggleFollow, addComment, deleteComment, toggleFinished,
-        submitProposal, submitUpcoming, publishNewRelease, handleUpcomingImage, approveProposal, rejectProposal, 
+        submitProposalAnime, submitProposalMovie, submitProposalOav, submitUpcoming, publishNewRelease, handleUpcomingImage, approveProposal, rejectProposal, 
         handleAdminImage, handleProposalImage, triggerProposalImageUpload, handleAvatarImage, triggerAvatarUpload,
         avatarInput, cropImage, updateProfile, modalConfirm, updateFriends,
         openSettings, closeSettings, saveSettingsAccount, saveSettingsCustomize, resetSettingsCustomize,
