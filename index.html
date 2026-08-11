@@ -3243,6 +3243,12 @@
             </div>
             <div class="field"><label>Année</label><input type="date" v-model="adminForm.releaseDate" /></div>
             
+            <!-- Résumé avant les images -->
+            <div class="field" style="flex:1 0 100%;">
+              <label>Résumé</label>
+              <textarea v-model="adminForm.summary" placeholder="Résumé de la série..." style="min-height:80px;"></textarea>
+            </div>
+            
             <!-- Images -->
             <div class="field" style="flex:1 0 100%;">
               <label style="font-weight:600;color:var(--accent2);font-size:0.9rem;">Images</label>
@@ -3276,11 +3282,6 @@
               </div>
             </div>
             
-            <div class="field" style="flex:1 0 100%;">
-              <label>Résumé</label>
-              <textarea v-model="adminForm.summary" placeholder="Résumé de la série..." style="min-height:80px;"></textarea>
-            </div>
-            
             <div style="display:flex;gap:0.8rem;flex-wrap:wrap;width:100%;margin-top:0.5rem;">
               <button class="btn btn-success" @click="adminSubmit('anime')"><i class="fas fa-check"></i> Ajouter</button>
               <button class="btn btn-secondary" @click="adminPage=''"><i class="fas fa-times"></i> Annuler</button>
@@ -3294,6 +3295,12 @@
             <div class="field"><label>Parties</label><input v-model.number="adminForm.parts" type="number" placeholder="1"></div>
             <div class="field"><label>Studio / Réalisateur</label><input v-model="adminForm.studio" placeholder="Studio"></div>
             <div class="field"><label>Année</label><input type="date" v-model="adminForm.releaseDate" /></div>
+            
+            <!-- Résumé avant les images -->
+            <div class="field" style="flex:1 0 100%;">
+              <label>Résumé</label>
+              <textarea v-model="adminForm.summary" placeholder="Résumé du film..." style="min-height:80px;"></textarea>
+            </div>
             
             <!-- Images -->
             <div class="field" style="flex:1 0 100%;">
@@ -3328,11 +3335,6 @@
               </div>
             </div>
             
-            <div class="field" style="flex:1 0 100%;">
-              <label>Résumé</label>
-              <textarea v-model="adminForm.summary" placeholder="Résumé du film..." style="min-height:80px;"></textarea>
-            </div>
-            
             <div style="display:flex;gap:0.8rem;flex-wrap:wrap;width:100%;margin-top:0.5rem;">
               <button class="btn btn-success" @click="adminSubmit('movie')"><i class="fas fa-check"></i> Ajouter</button>
               <button class="btn btn-secondary" @click="adminPage=''"><i class="fas fa-times"></i> Annuler</button>
@@ -3353,6 +3355,12 @@
             <div class="field"><label>Nombre de parties / épisodes</label><input v-model.number="adminForm.parts" type="number" placeholder="1"></div>
             <div class="field"><label>Studio / Réalisateur</label><input v-model="adminForm.studio" placeholder="Studio"></div>
             <div class="field"><label>Année</label><input type="date" v-model="adminForm.releaseDate" /></div>
+            
+            <!-- Résumé avant les images -->
+            <div class="field" style="flex:1 0 100%;">
+              <label>Résumé</label>
+              <textarea v-model="adminForm.summary" placeholder="Résumé de l'OAV..." style="min-height:80px;"></textarea>
+            </div>
             
             <!-- Images -->
             <div class="field" style="flex:1 0 100%;">
@@ -3385,11 +3393,6 @@
                   </div>
                 </div>
               </div>
-            </div>
-            
-            <div class="field" style="flex:1 0 100%;">
-              <label>Résumé</label>
-              <textarea v-model="adminForm.summary" placeholder="Résumé de l'OAV..." style="min-height:80px;"></textarea>
             </div>
             
             <div style="display:flex;gap:0.8rem;flex-wrap:wrap;width:100%;margin-top:0.5rem;">
