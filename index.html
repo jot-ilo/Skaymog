@@ -2618,13 +2618,12 @@
       width: 0%;
     }
 
-    /* Admin sidebar styles */
     .admin-sidebar {
       display: flex;
       flex-direction: column;
       gap: 0.5rem;
       width: 100%;
-      max-width: 300px;
+      max-width: 280px;
     }
     .admin-sidebar .admin-btn {
       width: 100%;
@@ -2658,6 +2657,71 @@
       .admin-sidebar {
         max-width: 100%;
       }
+    }
+
+    .image-upload-area {
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+      width: 100%;
+    }
+    .image-upload-area .image-row {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      flex-wrap: wrap;
+    }
+    .image-upload-area .image-row .preview-box {
+      width: 120px;
+      height: 67.5px;
+      background: var(--bg3);
+      border-radius: 8px;
+      border: 2px dashed var(--border);
+      overflow: hidden;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+      flex-shrink: 0;
+    }
+    .image-upload-area .image-row .preview-box.portrait {
+      width: 67.5px;
+      height: 120px;
+    }
+    .image-upload-area .image-row .preview-box img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+    .image-upload-area .image-row .preview-box .placeholder {
+      color: var(--text2);
+      font-size: 0.7rem;
+      text-align: center;
+    }
+    .image-upload-area .image-row .preview-box .placeholder i {
+      font-size: 1.5rem;
+      display: block;
+      margin-bottom: 4px;
+    }
+    .image-upload-area .image-row .edit-btn {
+      position: absolute;
+      bottom: 4px;
+      right: 4px;
+      background: var(--accent);
+      border: none;
+      border-radius: 50%;
+      width: 24px;
+      height: 24px;
+      color: #fff;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.6rem;
+      transition: 0.3s;
+    }
+    .image-upload-area .image-row .edit-btn:hover {
+      transform: scale(1.1);
     }
   </style>
 </head>
@@ -3154,9 +3218,9 @@
       
       <div class="admin-layout">
         <div class="admin-sidebar">
-          <button class="btn btn-primary admin-btn" @click="adminPage='add-series'"><i class="fas fa-plus"></i> Ajouter une série</button>
-          <button class="btn btn-purple admin-btn" @click="adminPage='add-movie'"><i class="fas fa-plus"></i> Ajouter un film</button>
-          <button class="btn btn-warning admin-btn" @click="adminPage='add-oav'"><i class="fas fa-plus"></i> Ajouter un OAV</button>
+          <button class="btn btn-primary admin-btn" @click="adminPage='add-series';resetAdminForm()"><i class="fas fa-plus"></i> Ajouter une série</button>
+          <button class="btn btn-purple admin-btn" @click="adminPage='add-movie';resetAdminForm()"><i class="fas fa-plus"></i> Ajouter un film</button>
+          <button class="btn btn-warning admin-btn" @click="adminPage='add-oav';resetAdminForm()"><i class="fas fa-plus"></i> Ajouter un OAV</button>
           <button class="btn btn-danger admin-btn" @click="adminPage='delete-items'"><i class="fas fa-trash"></i> Supprimer des animés</button>
           <button class="btn btn-success admin-btn" @click="adminPage='add-category'"><i class="fas fa-tag"></i> Ajouter une catégorie</button>
           <button class="btn btn-danger admin-btn" @click="adminPage='delete-user'"><i class="fas fa-user-minus"></i> Supprimer un utilisateur</button>
@@ -3178,6 +3242,45 @@
               </select>
             </div>
             <div class="field"><label>Année</label><input type="date" v-model="adminForm.releaseDate" /></div>
+            
+            <!-- Images -->
+            <div class="field" style="flex:1 0 100%;">
+              <label style="font-weight:600;color:var(--accent2);font-size:0.9rem;">Images</label>
+              <div class="image-upload-area">
+                <div class="image-row">
+                  <label style="font-size:0.8rem;color:var(--text2);min-width:100px;">Grille (16:9)</label>
+                  <div class="preview-box">
+                    <img v-if="adminForm.thumb" :src="adminForm.thumb" alt="Aperçu">
+                    <div v-else class="placeholder"><i class="fas fa-image"></i> 16:9</div>
+                    <button class="edit-btn" @click.stop="$refs.adminThumbInput.click()"><i class="fas fa-pen"></i></button>
+                  </div>
+                  <input type="file" @change="handleAdminImage('thumb', $event)" accept="image/*" style="display:none;" ref="adminThumbInput">
+                  <div>
+                    <button class="btn btn-sm btn-primary" @click="$refs.adminThumbInput.click()"><i class="fas fa-upload"></i></button>
+                    <button class="btn btn-sm btn-danger" @click="adminForm.thumb=''" v-if="adminForm.thumb"><i class="fas fa-times"></i></button>
+                  </div>
+                </div>
+                <div class="image-row">
+                  <label style="font-size:0.8rem;color:var(--text2);min-width:100px;">Détail (9:16)</label>
+                  <div class="preview-box portrait">
+                    <img v-if="adminForm.thumbPortrait" :src="adminForm.thumbPortrait" alt="Aperçu">
+                    <div v-else class="placeholder"><i class="fas fa-image"></i> 9:16</div>
+                    <button class="edit-btn" @click.stop="$refs.adminPortraitInput.click()"><i class="fas fa-pen"></i></button>
+                  </div>
+                  <input type="file" @change="handleAdminImage('thumbPortrait', $event)" accept="image/*" style="display:none;" ref="adminPortraitInput">
+                  <div>
+                    <button class="btn btn-sm btn-primary" @click="$refs.adminPortraitInput.click()"><i class="fas fa-upload"></i></button>
+                    <button class="btn btn-sm btn-danger" @click="adminForm.thumbPortrait=''" v-if="adminForm.thumbPortrait"><i class="fas fa-times"></i></button>
+                  </div>
+                </div>
+              </div>
+            </div>
+            
+            <div class="field" style="flex:1 0 100%;">
+              <label>Résumé</label>
+              <textarea v-model="adminForm.summary" placeholder="Résumé de la série..." style="min-height:80px;"></textarea>
+            </div>
+            
             <div style="display:flex;gap:0.8rem;flex-wrap:wrap;width:100%;margin-top:0.5rem;">
               <button class="btn btn-success" @click="adminSubmit('anime')"><i class="fas fa-check"></i> Ajouter</button>
               <button class="btn btn-secondary" @click="adminPage=''"><i class="fas fa-times"></i> Annuler</button>
@@ -3191,6 +3294,45 @@
             <div class="field"><label>Parties</label><input v-model.number="adminForm.parts" type="number" placeholder="1"></div>
             <div class="field"><label>Studio / Réalisateur</label><input v-model="adminForm.studio" placeholder="Studio"></div>
             <div class="field"><label>Année</label><input type="date" v-model="adminForm.releaseDate" /></div>
+            
+            <!-- Images -->
+            <div class="field" style="flex:1 0 100%;">
+              <label style="font-weight:600;color:var(--accent2);font-size:0.9rem;">Images</label>
+              <div class="image-upload-area">
+                <div class="image-row">
+                  <label style="font-size:0.8rem;color:var(--text2);min-width:100px;">Grille (16:9)</label>
+                  <div class="preview-box">
+                    <img v-if="adminForm.thumb" :src="adminForm.thumb" alt="Aperçu">
+                    <div v-else class="placeholder"><i class="fas fa-image"></i> 16:9</div>
+                    <button class="edit-btn" @click.stop="$refs.adminThumbInput2.click()"><i class="fas fa-pen"></i></button>
+                  </div>
+                  <input type="file" @change="handleAdminImage('thumb', $event)" accept="image/*" style="display:none;" ref="adminThumbInput2">
+                  <div>
+                    <button class="btn btn-sm btn-primary" @click="$refs.adminThumbInput2.click()"><i class="fas fa-upload"></i></button>
+                    <button class="btn btn-sm btn-danger" @click="adminForm.thumb=''" v-if="adminForm.thumb"><i class="fas fa-times"></i></button>
+                  </div>
+                </div>
+                <div class="image-row">
+                  <label style="font-size:0.8rem;color:var(--text2);min-width:100px;">Détail (9:16)</label>
+                  <div class="preview-box portrait">
+                    <img v-if="adminForm.thumbPortrait" :src="adminForm.thumbPortrait" alt="Aperçu">
+                    <div v-else class="placeholder"><i class="fas fa-image"></i> 9:16</div>
+                    <button class="edit-btn" @click.stop="$refs.adminPortraitInput2.click()"><i class="fas fa-pen"></i></button>
+                  </div>
+                  <input type="file" @change="handleAdminImage('thumbPortrait', $event)" accept="image/*" style="display:none;" ref="adminPortraitInput2">
+                  <div>
+                    <button class="btn btn-sm btn-primary" @click="$refs.adminPortraitInput2.click()"><i class="fas fa-upload"></i></button>
+                    <button class="btn btn-sm btn-danger" @click="adminForm.thumbPortrait=''" v-if="adminForm.thumbPortrait"><i class="fas fa-times"></i></button>
+                  </div>
+                </div>
+              </div>
+            </div>
+            
+            <div class="field" style="flex:1 0 100%;">
+              <label>Résumé</label>
+              <textarea v-model="adminForm.summary" placeholder="Résumé du film..." style="min-height:80px;"></textarea>
+            </div>
+            
             <div style="display:flex;gap:0.8rem;flex-wrap:wrap;width:100%;margin-top:0.5rem;">
               <button class="btn btn-success" @click="adminSubmit('movie')"><i class="fas fa-check"></i> Ajouter</button>
               <button class="btn btn-secondary" @click="adminPage=''"><i class="fas fa-times"></i> Annuler</button>
@@ -3211,6 +3353,45 @@
             <div class="field"><label>Nombre de parties / épisodes</label><input v-model.number="adminForm.parts" type="number" placeholder="1"></div>
             <div class="field"><label>Studio / Réalisateur</label><input v-model="adminForm.studio" placeholder="Studio"></div>
             <div class="field"><label>Année</label><input type="date" v-model="adminForm.releaseDate" /></div>
+            
+            <!-- Images -->
+            <div class="field" style="flex:1 0 100%;">
+              <label style="font-weight:600;color:var(--accent2);font-size:0.9rem;">Images</label>
+              <div class="image-upload-area">
+                <div class="image-row">
+                  <label style="font-size:0.8rem;color:var(--text2);min-width:100px;">Grille (16:9)</label>
+                  <div class="preview-box">
+                    <img v-if="adminForm.thumb" :src="adminForm.thumb" alt="Aperçu">
+                    <div v-else class="placeholder"><i class="fas fa-image"></i> 16:9</div>
+                    <button class="edit-btn" @click.stop="$refs.adminThumbInput3.click()"><i class="fas fa-pen"></i></button>
+                  </div>
+                  <input type="file" @change="handleAdminImage('thumb', $event)" accept="image/*" style="display:none;" ref="adminThumbInput3">
+                  <div>
+                    <button class="btn btn-sm btn-primary" @click="$refs.adminThumbInput3.click()"><i class="fas fa-upload"></i></button>
+                    <button class="btn btn-sm btn-danger" @click="adminForm.thumb=''" v-if="adminForm.thumb"><i class="fas fa-times"></i></button>
+                  </div>
+                </div>
+                <div class="image-row">
+                  <label style="font-size:0.8rem;color:var(--text2);min-width:100px;">Détail (9:16)</label>
+                  <div class="preview-box portrait">
+                    <img v-if="adminForm.thumbPortrait" :src="adminForm.thumbPortrait" alt="Aperçu">
+                    <div v-else class="placeholder"><i class="fas fa-image"></i> 9:16</div>
+                    <button class="edit-btn" @click.stop="$refs.adminPortraitInput3.click()"><i class="fas fa-pen"></i></button>
+                  </div>
+                  <input type="file" @change="handleAdminImage('thumbPortrait', $event)" accept="image/*" style="display:none;" ref="adminPortraitInput3">
+                  <div>
+                    <button class="btn btn-sm btn-primary" @click="$refs.adminPortraitInput3.click()"><i class="fas fa-upload"></i></button>
+                    <button class="btn btn-sm btn-danger" @click="adminForm.thumbPortrait=''" v-if="adminForm.thumbPortrait"><i class="fas fa-times"></i></button>
+                  </div>
+                </div>
+              </div>
+            </div>
+            
+            <div class="field" style="flex:1 0 100%;">
+              <label>Résumé</label>
+              <textarea v-model="adminForm.summary" placeholder="Résumé de l'OAV..." style="min-height:80px;"></textarea>
+            </div>
+            
             <div style="display:flex;gap:0.8rem;flex-wrap:wrap;width:100%;margin-top:0.5rem;">
               <button class="btn btn-success" @click="adminSubmit('oav')"><i class="fas fa-check"></i> Ajouter</button>
               <button class="btn btn-secondary" @click="adminPage=''"><i class="fas fa-times"></i> Annuler</button>
@@ -5910,6 +6091,7 @@
         cropImage(file, ratio, (dataUrl) => {
           adminForm.value[type] = dataUrl;
         });
+        e.target.value = '';
       };
 
       // --- PROPOSAL IMAGE UPLOAD ---
@@ -6159,9 +6341,6 @@
             }
             if (selectedItem.value && selectedItem.value.id === id) selectedItem.value = null;
             showToast('Animé supprimé', 'success');
-            if (adminPage.value === 'delete-items') {
-              // Reste sur la même page
-            }
           }
         });
       };
