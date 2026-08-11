@@ -3483,7 +3483,7 @@
         <div class="pages">
           <button @click="animePage--" :disabled="animePage===1"><i class="fas fa-chevron-left"></i></button>
           <span>{{ animePage }} / {{ animeTotalPages }}</span>
-          <button @click="animePage++" :disabled="animePage===animeTotalPages"><i class="fas fa-chevron-right"></i></button>
+          <button @click="goNextCatalogPage('animes', animePage, animeTotalPages)" :disabled="animePage===animeTotalPages"><i class="fas fa-chevron-right"></i></button>
         </div>
       </div>
 
@@ -3538,7 +3538,7 @@
         <div class="pages">
           <button @click="seriesPage--" :disabled="seriesPage===1"><i class="fas fa-chevron-left"></i></button>
           <span>{{ seriesPage }} / {{ seriesTotalPages }}</span>
-          <button @click="seriesPage++" :disabled="seriesPage===seriesTotalPages"><i class="fas fa-chevron-right"></i></button>
+          <button @click="goNextCatalogPage('animes', seriesPage, seriesTotalPages)" :disabled="seriesPage===seriesTotalPages"><i class="fas fa-chevron-right"></i></button>
         </div>
       </div>
 
@@ -3588,7 +3588,7 @@
         <div class="pages">
           <button @click="moviePage--" :disabled="moviePage===1"><i class="fas fa-chevron-left"></i></button>
           <span>{{ moviePage }} / {{ movieTotalPages }}</span>
-          <button @click="moviePage++" :disabled="moviePage===movieTotalPages"><i class="fas fa-chevron-right"></i></button>
+          <button @click="goNextCatalogPage('movies', moviePage, movieTotalPages)" :disabled="moviePage===movieTotalPages"><i class="fas fa-chevron-right"></i></button>
         </div>
       </div>
 
@@ -3630,7 +3630,7 @@
         <div class="pages">
           <button @click="ovaPage--" :disabled="ovaPage===1"><i class="fas fa-chevron-left"></i></button>
           <span>{{ ovaPage }} / {{ ovaTotalPages }}</span>
-          <button @click="ovaPage++" :disabled="ovaPage===ovaTotalPages"><i class="fas fa-chevron-right"></i></button>
+          <button @click="goNextCatalogPage('ovas', ovaPage, ovaTotalPages)" :disabled="ovaPage===ovaTotalPages"><i class="fas fa-chevron-right"></i></button>
         </div>
       </div>
 
@@ -4994,6 +4994,10 @@
       const ovaSearch = ref('');
       const ovaPage = ref(1);
       const pageSize = 10;
+      const initialCatalogSize = 50;
+      const catalogPageCursors = { animes: [], movies: [], ovas: [] };
+      const catalogHasMore = { animes: ref(false), movies: ref(false), ovas: ref(false) };
+      const catalogLoadingMore = { animes: ref(false), movies: ref(false), ovas: ref(false) };
       const selectedItem = ref(null);
       const userSearch = ref('');
       const darkMode = ref(true);
@@ -5137,7 +5141,7 @@
         }
         return list;
       });
-      const animeTotalPages = computed(() => Math.ceil(animeItems.value.length / pageSize) || 1);
+      const animeTotalPages = computed(() => Math.max(1, Math.ceil(animeItems.value.length / pageSize) + (catalogHasMore.animes.value ? 1 : 0)));
       const paginatedAnimes = computed(() => {
         const start = (animePage.value - 1) * pageSize;
         return animeItems.value.slice(start, start + pageSize);
@@ -5152,7 +5156,7 @@
         }
         return list;
       });
-      const seriesTotalPages = computed(() => Math.ceil(seriesItems.value.length / pageSize) || 1);
+      const seriesTotalPages = computed(() => Math.max(1, Math.ceil(seriesItems.value.length / pageSize) + (catalogHasMore.animes.value ? 1 : 0)));
       const paginatedSeries = computed(() => {
         const start = (seriesPage.value - 1) * pageSize;
         return seriesItems.value.slice(start, start + pageSize);
@@ -5166,7 +5170,7 @@
         }
         return list;
       });
-      const movieTotalPages = computed(() => Math.ceil(movieItems.value.length / pageSize) || 1);
+      const movieTotalPages = computed(() => Math.max(1, Math.ceil(movieItems.value.length / pageSize) + (catalogHasMore.movies.value ? 1 : 0)));
       const paginatedMovies = computed(() => {
         const start = (moviePage.value - 1) * pageSize;
         return movieItems.value.slice(start, start + pageSize);
@@ -5180,7 +5184,7 @@
         }
         return list;
       });
-      const ovaTotalPages = computed(() => Math.ceil(ovaItems.value.length / pageSize) || 1);
+      const ovaTotalPages = computed(() => Math.max(1, Math.ceil(ovaItems.value.length / pageSize) + (catalogHasMore.ovas.value ? 1 : 0)));
       const paginatedOvas = computed(() => {
         const start = (ovaPage.value - 1) * pageSize;
         return ovaItems.value.slice(start, start + pageSize);
@@ -5642,22 +5646,43 @@
         await Promise.all(writes);
       };
 
-      const loadCatalogCollection = async (collectionName) => {
-        const snapshot = await safeFirestoreOperation(() => db.collection(collectionName).get(), { docs: [] });
-        return (snapshot.docs || [])
-          .map(doc => doc.data())
-          .sort((a, b) => Number(a.id || 0) - Number(b.id || 0));
+      const catalogKeyFromCollection = (collectionName) =>
+        collectionName === ANIMES_COLLECTION ? 'animes' : collectionName === MOVIES_COLLECTION ? 'movies' : 'ovas';
+
+      const loadCatalogCollection = async (collectionName, reset = true) => {
+        const key = catalogKeyFromCollection(collectionName);
+        let query = db.collection(collectionName).orderBy('id', 'asc').limit(initialCatalogSize + 1);
+        if (!reset && catalogPageCursors[key].length) {
+          query = query.startAfter(catalogPageCursors[key][catalogPageCursors[key].length - 1]);
+        }
+        const snapshot = await safeFirestoreOperation(() => query.get(), { docs: [] });
+        const docs = snapshot.docs || [];
+        catalogHasMore[key].value = docs.length > initialCatalogSize;
+        const visibleDocs = docs.slice(0, initialCatalogSize);
+        if (visibleDocs.length) catalogPageCursors[key].push(visibleDocs[visibleDocs.length - 1]);
+        const items = visibleDocs.map(doc => doc.data());
+        if (!reset) {
+          const current = key === 'animes' ? animes.value : key === 'movies' ? movies.value : ovas.value;
+          return [...current, ...items].sort((a, b) => Number(a.id || 0) - Number(b.id || 0));
+        }
+        return items;
+      };
+
+      const loadMoreCatalog = async (key) => {
+        if (catalogLoadingMore[key].value || !catalogHasMore[key].value) return;
+        catalogLoadingMore[key].value = true;
+        try {
+          const collection = key === 'animes' ? ANIMES_COLLECTION : key === 'movies' ? MOVIES_COLLECTION : OVAS_COLLECTION;
+          const items = await loadCatalogCollection(collection, false);
+          if (key === 'animes') animes.value = items;
+          else if (key === 'movies') movies.value = items;
+          else ovas.value = items;
+        } finally { catalogLoadingMore[key].value = false; }
       };
 
       const saveAll = async () => {
         if (!window.db) return;
         try {
-          await Promise.all([
-            syncCatalogCollection(ANIMES_COLLECTION, animes.value),
-            syncCatalogCollection(MOVIES_COLLECTION, movies.value),
-            syncCatalogCollection(OVAS_COLLECTION, ovas.value)
-          ]);
-
           await Promise.all(newReleases.value.map(item =>
             db.collection(NEW_RELEASES_COLLECTION).doc(String(item.id)).set(item, { merge: true })
           ));
@@ -5690,17 +5715,20 @@
       const loadAll = async () => {
         if (!window.db) return false;
         try {
-          const usersSnap = await safeFirestoreOperation(() => db.collection(USERS_COLLECTION).get(), { docs: [] });
+          const [usersSnap, stateDoc, newReleasesSnap] = await Promise.all([
+            safeFirestoreOperation(() => db.collection(USERS_COLLECTION).limit(100).get(), { docs: [] }),
+            safeFirestoreOperation(() => db.doc(STATE_PATH).get(), { exists: false }),
+            safeFirestoreOperation(() => db.collection(NEW_RELEASES_COLLECTION).orderBy('id', 'asc').limit(50).get(), { docs: [] })
+          ]);
           if (usersSnap.docs && usersSnap.docs.length) users.value = usersSnap.docs.map(doc => doc.data());
 
-          const doc = await safeFirestoreOperation(() => db.doc(STATE_PATH).get(), { exists: false });
+          const doc = stateDoc;
           const data = doc && doc.exists ? doc.data() : {};
 
           proposals.value = data.proposals || [];
           movieProposals.value = data.movieProposals || [];
           ovaProposals.value = data.ovaProposals || [];
           
-          const newReleasesSnap = await safeFirestoreOperation(() => db.collection(NEW_RELEASES_COLLECTION).get(), { docs: [] });
           if (newReleasesSnap.docs && newReleasesSnap.docs.length) {
             newReleases.value = newReleasesSnap.docs.map(doc => doc.data()).sort((a,b) => Number(a.id||0)-Number(b.id||0));
           } else if (data.newReleases && data.newReleases.length) {
@@ -5716,9 +5744,11 @@
           if (data.adminCode) currentAdminCode.value = data.adminCode;
           if (data.accentColor) selectedColor.value = data.accentColor;
 
-          let firestoreAnimes = await loadCatalogCollection(ANIMES_COLLECTION);
-          let firestoreMovies = await loadCatalogCollection(MOVIES_COLLECTION);
-          let firestoreOvas = await loadCatalogCollection(OVAS_COLLECTION);
+          let [firestoreAnimes, firestoreMovies, firestoreOvas] = await Promise.all([
+            loadCatalogCollection(ANIMES_COLLECTION),
+            loadCatalogCollection(MOVIES_COLLECTION),
+            loadCatalogCollection(OVAS_COLLECTION)
+          ]);
 
           if (firestoreAnimes.length === 0) {
             const predefinedAnimes = buildAllAnimes();
@@ -5742,7 +5772,7 @@
           movies.value = firestoreMovies;
           ovas.value = firestoreOvas;
 
-          await loadSocialDataCloud();
+          setTimeout(() => loadSocialDataCloud().catch(() => {}), 1500);
           return true;
         } catch (e) {
           console.error('Erreur chargement Firebase :', e);
@@ -5803,54 +5833,28 @@
             .sort((a, b) => Number(a.id || 0) - Number(b.id || 0));
         }, (error) => console.error('Erreur écoute nouveautés :', error));
 
-        unsubAnimes = db.collection(ANIMES_COLLECTION).onSnapshot((snapshot) => {
+        unsubAnimes = db.collection(ANIMES_COLLECTION).orderBy('id', 'asc').limit(initialCatalogSize).onSnapshot((snapshot) => {
           if (isLoading.value) return;
           animes.value = snapshot.docs
             .map(doc => doc.data())
             .sort((a, b) => Number(a.id || 0) - Number(b.id || 0));
         }, (error) => console.error('Erreur écoute animés :', error));
 
-        unsubMovies = db.collection(MOVIES_COLLECTION).onSnapshot((snapshot) => {
+        unsubMovies = db.collection(MOVIES_COLLECTION).orderBy('id', 'asc').limit(initialCatalogSize).onSnapshot((snapshot) => {
           if (isLoading.value) return;
           movies.value = snapshot.docs
             .map(doc => doc.data())
             .sort((a, b) => Number(a.id || 0) - Number(b.id || 0));
         }, (error) => console.error('Erreur écoute films :', error));
 
-        unsubOvas = db.collection(OVAS_COLLECTION).onSnapshot((snapshot) => {
+        unsubOvas = db.collection(OVAS_COLLECTION).orderBy('id', 'asc').limit(initialCatalogSize).onSnapshot((snapshot) => {
           if (isLoading.value) return;
           ovas.value = snapshot.docs
             .map(doc => doc.data())
             .sort((a, b) => Number(a.id || 0) - Number(b.id || 0));
         }, (error) => console.error('Erreur écoute OAV :', error));
 
-        db.collection(LIKES_COLLECTION).onSnapshot((snapshot) => {
-          if (isLoading.value) return;
-          const all = [...animes.value, ...movies.value, ...ovas.value];
-          snapshot.forEach(doc => {
-            const data = doc.data();
-            const item = all.find(x => x.id == data.itemId &&
-              (x.type || (movies.value.includes(x) ? 'movie' : (ovas.value.includes(x) ? 'oav' : 'anime'))) === data.itemType);
-            if (!item && data.itemType === 'proposal_anime') item = proposals.value.find(x => x.id == data.itemId);
-            if (!item && data.itemType === 'proposal_movie') item = movieProposals.value.find(x => x.id == data.itemId);
-            if (!item && data.itemType === 'proposal_oav') item = ovaProposals.value.find(x => x.id == data.itemId);
-            if (!item && data.itemType === 'newrelease_anime') item = newReleases.value.find(x => x.id == data.itemId);
-            if (item) item.likes = data.userIds || [];
-          });
-        }, (error) => console.error('Erreur écoute likes :', error));
-
-        db.collection(COMMENTS_COLLECTION).onSnapshot((snapshot) => {
-          if (isLoading.value) return;
-          const all = [...animes.value, ...movies.value, ...ovas.value];
-          all.forEach(item => item.comments = []);
-          snapshot.forEach(doc => {
-            const data = doc.data();
-            const item = all.find(x => x.id == data.itemId &&
-              (x.type || (movies.value.includes(x) ? 'movie' : (ovas.value.includes(x) ? 'oav' : 'anime'))) === data.itemType);
-            if (item) item.comments.push(data);
-          });
-        }, (error) => console.error('Erreur écoute commentaires :', error));
-
+        // Likes/commentaires chargés après le premier rendu.
         db.collection(FOLLOWS_COLLECTION).doc('all').onSnapshot((doc) => {
           if (doc.exists && !isLoading.value) followers.value = doc.data().followers || {};
         });
@@ -6359,6 +6363,11 @@
       const viewMyWatched = () => { selectedList.value = 'watched'; currentPage.value = 'home'; currentTab.value = 'lists'; window.scrollTo({ top: 0, behavior: 'smooth' }); };
       const viewMyPublished = () => { viewedUser.value = currentUser.value; currentPage.value = 'user-page'; showUserPublished.value = true; showUserWatched.value = false; window.scrollTo({ top: 0, behavior: 'smooth' }); };
       const viewUserPublished = () => { showUserPublished.value = !showUserPublished.value; showUserWatched.value = false; };
+      const goNextCatalogPage = async (key, pageRef, totalPagesRef) => {
+        if (pageRef.value >= Math.ceil((key === 'animes' ? animes.value : key === 'movies' ? movies.value : ovas.value).length / pageSize) && catalogHasMore[key].value) await loadMoreCatalog(key);
+        if (pageRef.value < totalPagesRef.value) pageRef.value++;
+      };
+
       const resetAnimePage = () => { animePage.value = 1; };
       const resetSeriesPage = () => { seriesPage.value = 1; };
       const resetProposalPage = () => { proposalPage.value = 1; };
@@ -6412,12 +6421,20 @@
         reader.readAsDataURL(file);
       };
 
+      const uploadImageToStorage = async (dataUrl, folder = 'uploads') => {
+        if (!window.storage || !dataUrl || !dataUrl.startsWith('data:image/')) return dataUrl;
+        const path = `${folder}/${Date.now()}_${Math.random().toString(36).slice(2)}.jpg`;
+        const storageRef = storage.ref(path);
+        await storageRef.putString(dataUrl, 'data_url', { contentType: 'image/jpeg', cacheControl: 'public,max-age=31536000,immutable' });
+        return await storageRef.getDownloadURL();
+      };
+
       // --- ADMIN IMAGE UPLOAD ---
       const handleAdminImage = (type, e) => {
         const file = e.target.files[0];
         if (!file) return;
         const ratio = type === 'thumb' ? '16:9' : '9:16';
-        cropImage(file, ratio, (dataUrl) => { adminForm.value[type] = dataUrl; });
+        cropImage(file, ratio, async (dataUrl) => { try { adminForm.value[type] = await uploadImageToStorage(dataUrl, 'catalog'); } catch (err) { console.error(err); showToast('Erreur upload image', 'error'); } });
         e.target.value = '';
       };
 
@@ -6433,7 +6450,7 @@
         const file = e.target.files[0];
         if (!file) return;
         const ratio = type === 'thumb' ? '16:9' : '9:16';
-        cropImage(file, ratio, (dataUrl) => { proposalForm.value[type] = dataUrl; });
+        cropImage(file, ratio, async (dataUrl) => { try { proposalForm.value[type] = await uploadImageToStorage(dataUrl, 'proposals'); } catch (err) { console.error(err); showToast('Erreur upload image', 'error'); } });
       };
 
       // --- AVATAR UPLOAD ---
@@ -6443,6 +6460,7 @@
         const file = e.target.files[0];
         if (!file) return;
         cropImage(file, '1:1', async (dataUrl) => {
+          try { dataUrl = await uploadImageToStorage(dataUrl, 'avatars'); } catch (err) { console.error(err); showToast('Erreur upload avatar', 'error'); return; }
           profileForm.value.avatar = dataUrl;
           if (!currentUser.value || currentUser.value.role === 'guest') return;
 
@@ -7115,7 +7133,8 @@
           if (selectedItem.value && selectedItem.value.id === id && selectedItem.value.type === type) {
             selectedItem.value = { ...item };
           }
-          saveAll();
+          const collection = type === 'movie' ? MOVIES_COLLECTION : ANIMES_COLLECTION;
+          db.collection(collection).doc(String(id)).set({ finished: item.finished }, { merge: true }).catch(console.error);
           showToast(item.finished ? 'Marqué comme terminé' : 'Marqué comme en cours', 'info');
         }
       };
