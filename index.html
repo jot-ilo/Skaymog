@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Skaymog </title>
+  <title>Skaymog</title>
   <link rel="icon" type="image/png" sizes="32x32" href="favicon.png">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
 
@@ -58,7 +58,7 @@
   </script>
 
   <style>
-    /* TOUS LES STYLES IDENTIQUES À LA VERSION PRÉCÉDENTE - Gardés pour gagner de la place */
+    /* TOAST */
     .toast-container {
       position: fixed;
       top: 20px;
@@ -208,12 +208,13 @@
       transition: background 0.3s, color 0.3s;
     }
     body.light {
-      --bg: #f5f0eb;
-      --bg2: #fff;
-      --bg3: #f0ebe6;
-      --text: #1e1a1f;
-      --text2: #4a3f44;
-      --border: #d5cdc8;
+      --bg: #ffffff;
+      --bg2: #ffffff;
+      --bg3: #f5f5f5;
+      --text: #1a1a1a;
+      --text2: #6b6b6b;
+      --border: #e0e0e0;
+      --shadow: 0 8px 20px rgba(0, 0, 0, 0.08);
     }
     .container {
       max-width: 1400px;
@@ -725,9 +726,6 @@
       margin: 1.5rem 0;
     }
     
-    /* ============================================================
-       CARTES UNIFORMISÉES (MODIFIÉES POUR L'ORDRE : SAISONS, ÉPISODES, STUDIO)
-       ============================================================ */
     .card {
         background: var(--bg2);
         border-radius: var(--radius);
@@ -739,7 +737,6 @@
         box-shadow: var(--shadow);
         position: relative;
         cursor: pointer;
-        
         height: 100%;
         min-height: 340px;
         box-sizing: border-box;
@@ -2611,8 +2608,6 @@
 </head>
 <body>
 <div id="app" v-cloak>
-  <!-- LE HTML EST IDENTIQUE À LA VERSION PRÉCÉDENTE -->
-  <!-- Pour des raisons de taille, je conserve le HTML existant -->
   <div class="container">
     <!-- TOAST CONTAINER -->
     <div class="toast-container" id="toastContainer">
@@ -3342,7 +3337,6 @@
             </div>
             <div class="title">{{ item.title }}</div>
             <div class="details">
-              <!-- Ordre modifié : Saison, Épisodes, Studio -->
               <span v-if="item.type === 'anime' && item.saison"><i class="fas fa-layer-group"></i> S{{ item.saison }}</span>
               <span v-if="item.type === 'anime'"><i class="fas fa-tv"></i> {{ item.ep || 0 }} ép.</span>
               <span v-if="item.type === 'movie'"><i class="fas fa-play"></i> {{ item.parts || 1 }} partie(s)</span>
@@ -3400,7 +3394,6 @@
             </div>
             <div class="title">{{ item.title }}</div>
             <div class="details">
-              <!-- Ordre modifié : Saison, Épisodes, Studio -->
               <span v-if="item.saison"><i class="fas fa-layer-group"></i> S{{ item.saison }}</span>
               <span><i class="fas fa-tv"></i> {{ item.ep || 0 }} ép.</span>
               <span v-if="item.studio"><i class="fas fa-building"></i> {{ item.studio }}</span>
@@ -3892,6 +3885,105 @@
        Bibliothèque d'animés et films
     </div>
   </div>
+
+  <!-- CONTEXT MENU -->
+  <div v-if="contextMenuVisible" class="context-menu" :style="{top: contextMenuY + 'px', left: contextMenuX + 'px'}" @click.stop>
+    <button class="menu-item danger" @click="contextMenuRemove">🗑️ Retirer de la liste</button>
+    <button class="menu-item" @click="contextMenuAddToList('toWatch')">⏰ Ajouter à "à voir"</button>
+    <button class="menu-item" @click="contextMenuAddToList('watched')">👁️ Ajouter aux vus</button>
+    <div v-for="name in contextMenuTargetLists" :key="name">
+      <button v-if="name !== 'toWatch' && name !== 'watched'" class="menu-item" @click="contextMenuAddToList(name)">📁 Ajouter à "{{ name }}"</button>
+    </div>
+    <button class="menu-item" @click="contextMenuClose">✖ Fermer</button>
+  </div>
+
+  <!-- MODAL -->
+  <div v-if="showModal" class="modal-overlay" @click.self="showModal=false">
+    <div class="modal">
+      <h3>{{ modalTitle }}</h3>
+      <p>{{ modalMessage }}</p>
+      <div v-if="modalInput">
+        <input v-model="modalInputValue" :placeholder="modalInputPlaceholder" @keydown.enter="modalConfirm">
+      </div>
+      <div class="buttons">
+        <button class="btn btn-primary" @click="modalConfirm"><i class="fas fa-check"></i> Confirmer</button>
+        <button class="btn btn-secondary" @click="showModal=false"><i class="fas fa-times"></i> Annuler</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- SETTINGS OVERLAY -->
+  <div v-if="showSettings" class="settings-overlay" @click.self="closeSettings">
+    <div class="settings-panel">
+      <button class="settings-close" @click="closeSettings"><i class="fas fa-times"></i></button>
+      <div class="settings-sidebar">
+        <button class="settings-tab" :class="{active:settingsTab==='account'}" @click="settingsTab='account'">
+          <i class="fas fa-user-cog"></i> Compte
+        </button>
+        <button class="settings-tab" :class="{active:settingsTab==='customize'}" @click="settingsTab='customize'">
+          <i class="fas fa-palette"></i> Personnaliser
+        </button>
+        <button class="settings-tab" :class="{active:settingsTab==='admin'}" v-if="currentUser && currentUser.role === 'admin'" @click="settingsTab='admin'">
+          <i class="fas fa-crown"></i> Admin
+        </button>
+        <button class="settings-tab toggle-mode" @click="toggleAdminModeFromSettings" v-if="currentUser && currentUser.role !== 'guest'">
+          <i class="fas fa-arrows-alt-h"></i> {{ currentUser.role === 'admin' ? 'Mode utilisateur' : 'Mode admin' }}
+        </button>
+        <button class="settings-tab" @click="confirmLogout" v-if="currentUser && currentUser.role !== 'guest'">
+          <i class="fas fa-sign-out-alt"></i> Déconnexion
+        </button>
+      </div>
+      <div class="settings-content">
+        <div class="settings-page" :class="{active:settingsTab==='account'}">
+          <h3><i class="fas fa-user-cog"></i> Compte</h3>
+          <div class="field">
+            <label>Nom d'affichage</label>
+            <input v-model="settingsDisplayName" placeholder="Nom d'affichage">
+          </div>
+          <div class="field">
+            <label>Nouveau mot de passe</label>
+            <input v-model="settingsPassword" type="password" placeholder="Nouveau mot de passe (min 8 caractères)">
+          </div>
+          <button class="btn btn-primary" @click="saveSettingsAccount"><i class="fas fa-save"></i> Enregistrer</button>
+        </div>
+        <div class="settings-page" :class="{active:settingsTab==='customize'}">
+          <h3><i class="fas fa-palette"></i> Personnaliser</h3>
+          <div style="margin-bottom:1.5rem;">
+            <label style="display:block;margin-bottom:0.5rem;font-weight:600;color:var(--text2);">Couleur d'accent</label>
+            <div class="color-palette">
+              <div class="color-swatch" v-for="color in colorPalette" :key="color" 
+                   :style="{background:color}" 
+                   :class="{active:selectedColor===color}" 
+                   @click="selectedColor=color">
+              </div>
+            </div>
+          </div>
+          <div style="margin-bottom:1.5rem;">
+            <label style="display:block;margin-bottom:0.5rem;font-weight:600;color:var(--text2);">Thème</label>
+            <button class="btn" @click="toggleTheme">
+              <i :class="darkMode ? 'fas fa-sun' : 'fas fa-moon'"></i>
+              {{ darkMode ? 'Thème clair' : 'Thème sombre' }}
+            </button>
+          </div>
+          <button class="btn btn-primary" @click="saveSettingsCustomize"><i class="fas fa-save"></i> Enregistrer</button>
+          <button class="btn btn-danger" @click="resetSettingsCustomize" style="margin-left:0.5rem;"><i class="fas fa-undo"></i> Réinitialiser</button>
+        </div>
+        <div class="settings-page" :class="{active:settingsTab==='admin'}" v-if="currentUser && currentUser.role === 'admin'">
+          <h3><i class="fas fa-crown"></i> Administration</h3>
+          <div class="user-delete-section">
+            <h4 style="color:var(--text2);margin-bottom:0.5rem;">Supprimer un utilisateur</h4>
+            <select v-model="userToDelete">
+              <option value="">-- Sélectionner un utilisateur --</option>
+              <option v-for="user in deletableUsers" :key="user.id" :value="user.id">
+                {{ user.displayName || user.username }} ({{ user.username }})
+              </option>
+            </select>
+            <button class="btn btn-danger" @click="confirmDeleteUser"><i class="fas fa-trash"></i> Supprimer</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
 </div>
 
 <script src="https://unpkg.com/vue@3/dist/vue.global.js">
@@ -3922,13 +4014,9 @@
   };
 
   // ============================================================
-  // LISTE COMPLÈTE DES ANIMÉS AVEC LEURS INFORMATIONS EXACTES
+  // LISTE COMPLÈTE DES ANIMÉS
   // ============================================================
   function buildAllAnimes() {
-    // Tous les animés avec leurs informations exactes comme dans le fichier original
-    // Cette liste contient TOUS les animés des 11 catégories
-    // Pour des raisons de taille, je ne peux pas tous les lister ici
-    // Mais le code complet contient TOUS les animés
     const allAnimes = [
       // Shonen
       { title: 'One Piece', ep: 1167, saison: 22, films: 15, studio: 'Toei Animation', category: 'Shonen' },
@@ -4502,10 +4590,7 @@
   }
 
   function buildInitialMovies() {
-    // TOUS LES FILMS AVEC LEURS INFORMATIONS EXACTES
-    // Cette liste contient les films existants + les 200 nouveaux films
     const moviesData = [
-      // Films existants
       { title: 'Jujutsu Kaisen 0', parts: 1, studio: 'MAPPA', releaseDate: '2021-12-24' },
       { title: 'Your Name', parts: 1, studio: 'CoMix Wave Films', releaseDate: '2016-08-26' },
       { title: 'A Silent Voice', parts: 1, studio: 'Kyoto Animation', releaseDate: '2016-09-17' },
@@ -4606,8 +4691,6 @@
       { title: 'Wolf Children', parts: 1, studio: 'Studio Chizu', releaseDate: '2012-07-21' },
       { title: 'Belle', parts: 1, studio: 'Studio Chizu', releaseDate: '2021-07-16' },
       { title: 'Summer Wars', parts: 1, studio: 'Madhouse', releaseDate: '2009-08-01' },
-      
-      // NOUVEAUX FILMS (200 films supplémentaires)
       { title: 'The Girl Who Leapt Through Time', parts: 1, studio: 'Madhouse', releaseDate: '2006' },
       { title: 'Millennium Actress', parts: 1, studio: 'Madhouse', releaseDate: '2001' },
       { title: 'Tokyo Godfathers', parts: 1, studio: 'Madhouse', releaseDate: '2003' },
@@ -4830,8 +4913,6 @@
   }
 
   function buildInitialOvas() {
-    // TOUS LES OAV AVEC LEURS INFORMATIONS EXACTES
-    // Cette liste contient les 200 OAV, épisodes spéciaux et live actions
     const ovasData = [
       { title: 'One Punch Man OAV', oavType: 'OAV', parts: 12, studio: 'Madhouse / J.C.Staff', releaseDate: '2015' },
       { title: 'Fairy Tail OAV', oavType: 'OAV', parts: 10, studio: 'A-1 Pictures / Bridge', releaseDate: '2011' },
