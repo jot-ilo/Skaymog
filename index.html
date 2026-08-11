@@ -381,6 +381,12 @@
       color: #fff;
     }
     .btn-purple:hover { background: #7b1fa2; }
+    .btn-warning {
+      background: var(--orange);
+      border: none;
+      color: #fff;
+    }
+    .btn-warning:hover { background: #e68900; }
     .btn-sm {
       padding: 0.2rem 0.8rem;
       font-size: 0.75rem;
@@ -2611,6 +2617,48 @@
       transition: width 0.3s;
       width: 0%;
     }
+
+    /* Admin sidebar styles */
+    .admin-sidebar {
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+      width: 100%;
+      max-width: 300px;
+    }
+    .admin-sidebar .admin-btn {
+      width: 100%;
+      justify-content: flex-start;
+      padding: 0.6rem 1.2rem;
+      font-size: 0.9rem;
+    }
+    .admin-sidebar .admin-btn i {
+      width: 24px;
+    }
+    .admin-page-content {
+      flex: 1;
+      padding-left: 1.5rem;
+      border-left: 1px solid var(--border);
+    }
+    .admin-layout {
+      display: flex;
+      gap: 1.5rem;
+      margin-top: 1rem;
+    }
+    @media (max-width:700px) {
+      .admin-layout {
+        flex-direction: column;
+      }
+      .admin-page-content {
+        padding-left: 0;
+        border-left: none;
+        border-top: 1px solid var(--border);
+        padding-top: 1rem;
+      }
+      .admin-sidebar {
+        max-width: 100%;
+      }
+    }
   </style>
 </head>
 <body>
@@ -2653,10 +2701,10 @@
     </div>
 
     <!-- HEADER -->
-    <header class="header" v-if="currentPage !== 'landing' && currentPage !== 'login' && currentPage !== 'register' && currentPage !== 'admin-code' && currentPage !== 'licence' && currentPage !== 'detail' && currentPage !== 'proposal-anime' && currentPage !== 'proposal-movie' && currentPage !== 'proposal-oav'">
+    <header class="header" v-if="currentPage !== 'landing' && currentPage !== 'login' && currentPage !== 'register' && currentPage !== 'admin-code' && currentPage !== 'licence' && currentPage !== 'detail' && currentPage !== 'proposal-anime' && currentPage !== 'proposal-movie' && currentPage !== 'proposal-oav' && currentPage !== 'proposal-choice'">
       <div class="header-left">
         <div class="logo" @click="goHome">
-          <i class="fas fa-dragon"></i> SKAYMOG <span class="badge">{{ allItems.length }}</span>
+          <i class="fas fa-dragon"></i> SKAYMOG <span class="badge">{{ totalAnimes }}</span>
         </div>
         <button class="btn btn-sm" @click="goHome"><i class="fas fa-home"></i> Accueil</button>
         <div class="theme-toggle" @click="toggleTheme">
@@ -2697,7 +2745,7 @@
         <button class="btn btn-guest btn-lg" @click="loginAsGuest"><i class="fas fa-user-secret"></i> Invité</button>
       </div>
       <div class="feature-icons">
-        <div class="feature"><i class="fas fa-film"></i><span>{{ allItems.length }} animés</span></div>
+        <div class="feature"><i class="fas fa-film"></i><span>{{ totalAnimes }} animés</span></div>
         <div class="feature"><i class="fas fa-users"></i><span>{{ users.length }} utilisateurs</span></div>
         <div class="feature"><i class="fas fa-heart"></i><span>Likes en temps réel</span></div>
         <div class="feature"><i class="fas fa-comment-dots"></i><span>Messagerie</span></div>
@@ -3104,122 +3152,124 @@
         <button class="btn btn-sm" @click="goHome"><i class="fas fa-arrow-left"></i> Retour</button>
       </div>
       
-      <div style="display:flex;flex-wrap:wrap;gap:0.5rem;margin-bottom:1.5rem;">
-        <button class="btn btn-primary" @click="adminForm.type='anime';resetAdminForm();showAdminForm=true"><i class="fas fa-plus"></i> Ajouter un animé</button>
-        <button class="btn btn-purple" @click="adminForm.type='movie';resetAdminForm();showAdminForm=true"><i class="fas fa-plus"></i> Ajouter un film</button>
-        <button class="btn btn-warning" @click="adminForm.type='oav';resetAdminForm();showAdminForm=true"><i class="fas fa-plus"></i> Ajouter un OAV</button>
-        <button class="btn btn-danger" @click="showDeleteItems=true"><i class="fas fa-trash"></i> Supprimer des animés</button>
-        <button class="btn btn-success" @click="showCategoryForm=true"><i class="fas fa-tag"></i> Ajouter une catégorie</button>
-        <button class="btn btn-danger" @click="showUserDelete=true"><i class="fas fa-user-minus"></i> Supprimer un utilisateur</button>
-      </div>
-
-      <!-- Formulaire d'ajout d'animé/film/oav -->
-      <div v-if="showAdminForm" class="admin-form" style="border:1px solid var(--border);padding:1rem;border-radius:12px;margin-bottom:1rem;">
-        <h4 style="color:var(--accent2);margin-bottom:0.5rem;width:100%;">Ajouter un {{ adminForm.type === 'anime' ? 'animé' : adminForm.type === 'movie' ? 'film' : 'OAV' }}</h4>
-        
-        <div class="field">
-          <label>Titre *</label>
-          <input v-model="adminForm.title" placeholder="Titre obligatoire">
+      <div class="admin-layout">
+        <div class="admin-sidebar">
+          <button class="btn btn-primary admin-btn" @click="adminPage='add-series'"><i class="fas fa-plus"></i> Ajouter une série</button>
+          <button class="btn btn-purple admin-btn" @click="adminPage='add-movie'"><i class="fas fa-plus"></i> Ajouter un film</button>
+          <button class="btn btn-warning admin-btn" @click="adminPage='add-oav'"><i class="fas fa-plus"></i> Ajouter un OAV</button>
+          <button class="btn btn-danger admin-btn" @click="adminPage='delete-items'"><i class="fas fa-trash"></i> Supprimer des animés</button>
+          <button class="btn btn-success admin-btn" @click="adminPage='add-category'"><i class="fas fa-tag"></i> Ajouter une catégorie</button>
+          <button class="btn btn-danger admin-btn" @click="adminPage='delete-user'"><i class="fas fa-user-minus"></i> Supprimer un utilisateur</button>
+          <button class="btn btn-info admin-btn" @click="adminPage='reports'"><i class="fas fa-flag"></i> Signalements</button>
         </div>
         
-        <div class="field" v-if="adminForm.type === 'anime'">
-          <label>Épisodes</label>
-          <input v-model.number="adminForm.ep" type="number" placeholder="24">
-        </div>
-        
-        <div class="field" v-if="adminForm.type === 'movie' || adminForm.type === 'oav'">
-          <label>Parties</label>
-          <input v-model.number="adminForm.parts" type="number" placeholder="1">
-        </div>
-        
-        <div class="field" v-if="adminForm.type === 'oav'">
-          <label>Type OAV</label>
-          <select v-model="adminForm.oavType">
-            <option value="OAV">OAV</option>
-            <option value="Épisode spécial">Épisode spécial</option>
-            <option value="Live Action">Live Action</option>
-          </select>
-        </div>
-        
-        <div class="field">
-          <label>Studio / Réalisateur</label>
-          <input v-model="adminForm.studio" placeholder="Studio">
-        </div>
-        
-        <div class="field" v-if="adminForm.type === 'anime'">
-          <label>Saison</label>
-          <input v-model.number="adminForm.saison" type="number" placeholder="1">
-        </div>
-        
-        <div class="field" v-if="adminForm.type === 'anime'">
-          <label>Catégorie</label>
-          <select v-model="adminForm.category">
-            <option v-for="c in categories" :value="c">{{c}}</option>
-            <option value="">Aucune</option>
-          </select>
-        </div>
-        
-        <div class="field">
-          <label>Année</label>
-          <input type="date" v-model="adminForm.releaseDate" />
-        </div>
-        
-        <div style="display:flex;gap:0.8rem;flex-wrap:wrap;width:100%;margin-top:0.5rem;">
-          <button class="btn btn-success" @click="adminSubmit"><i class="fas fa-check"></i> Ajouter</button>
-          <button class="btn btn-secondary" @click="showAdminForm=false;resetAdminForm();"><i class="fas fa-times"></i> Annuler</button>
-        </div>
-      </div>
-
-      <!-- Suppression d'animés -->
-      <div v-if="showDeleteItems" style="border:1px solid var(--border);padding:1rem;border-radius:12px;margin-bottom:1rem;">
-        <h4 style="color:var(--red);margin-bottom:0.5rem;"><i class="fas fa-trash"></i> Supprimer des animés</h4>
-        <div style="display:flex;flex-wrap:wrap;gap:0.5rem;max-height:300px;overflow-y:auto;">
-          <div v-for="item in allPublished" :key="item.id" style="display:flex;align-items:center;gap:0.5rem;background:var(--bg3);padding:0.3rem 0.8rem;border-radius:20px;border:1px solid var(--border);">
-            <span style="font-size:0.8rem;">{{ item.title }}</span>
-            <button class="btn btn-sm btn-danger" @click="confirmDeleteItem(item.id, item.type)" style="padding:0.05rem 0.4rem;font-size:0.6rem;"><i class="fas fa-times"></i></button>
+        <div class="admin-page-content">
+          <!-- Ajouter une série -->
+          <div v-if="adminPage === 'add-series'" class="admin-form">
+            <h4 style="color:var(--accent2);margin-bottom:0.5rem;width:100%;">Ajouter une série</h4>
+            <div class="field"><label>Titre *</label><input v-model="adminForm.title" placeholder="Titre obligatoire"></div>
+            <div class="field"><label>Épisodes</label><input v-model.number="adminForm.ep" type="number" placeholder="24"></div>
+            <div class="field"><label>Studio / Réalisateur</label><input v-model="adminForm.studio" placeholder="Studio"></div>
+            <div class="field"><label>Saison</label><input v-model.number="adminForm.saison" type="number" placeholder="1"></div>
+            <div class="field"><label>Catégorie</label>
+              <select v-model="adminForm.category">
+                <option v-for="c in categories" :value="c">{{c}}</option>
+                <option value="">Aucune</option>
+              </select>
+            </div>
+            <div class="field"><label>Année</label><input type="date" v-model="adminForm.releaseDate" /></div>
+            <div style="display:flex;gap:0.8rem;flex-wrap:wrap;width:100%;margin-top:0.5rem;">
+              <button class="btn btn-success" @click="adminSubmit('anime')"><i class="fas fa-check"></i> Ajouter</button>
+              <button class="btn btn-secondary" @click="adminPage=''"><i class="fas fa-times"></i> Annuler</button>
+            </div>
           </div>
-        </div>
-        <button class="btn btn-sm" @click="showDeleteItems=false" style="margin-top:0.5rem;">Fermer</button>
-      </div>
-
-      <!-- Ajout de catégorie -->
-      <div v-if="showCategoryForm" style="border:1px solid var(--border);padding:1rem;border-radius:12px;margin-bottom:1rem;">
-        <h4 style="color:var(--green);margin-bottom:0.5rem;"><i class="fas fa-tag"></i> Ajouter une catégorie</h4>
-        <div style="display:flex;gap:0.5rem;">
-          <input v-model="newCategory" placeholder="Nom de la catégorie" style="flex:1;background:var(--bg3);border:1px solid var(--border);padding:0.5rem 1rem;border-radius:40px;color:var(--text);outline:none;">
-          <button class="btn btn-success" @click="addCategory"><i class="fas fa-plus"></i> Ajouter</button>
-          <button class="btn btn-sm" @click="showCategoryForm=false"><i class="fas fa-times"></i></button>
-        </div>
-      </div>
-
-      <!-- Suppression d'utilisateur -->
-      <div v-if="showUserDelete" style="border:1px solid var(--border);padding:1rem;border-radius:12px;margin-bottom:1rem;">
-        <h4 style="color:var(--red);margin-bottom:0.5rem;"><i class="fas fa-user-minus"></i> Supprimer un utilisateur</h4>
-        <div style="display:flex;gap:0.5rem;flex-wrap:wrap;">
-          <select v-model="userToDelete" style="flex:1;min-width:200px;background:var(--bg3);border:1px solid var(--border);padding:0.5rem 1rem;border-radius:40px;color:var(--text);outline:none;">
-            <option value="">-- Sélectionner un utilisateur --</option>
-            <option v-for="user in deletableUsers" :key="user.id" :value="user.id">
-              {{ user.displayName || user.username }} (@{{ user.username }})
-            </option>
-          </select>
-          <button class="btn btn-danger" @click="confirmDeleteUser"><i class="fas fa-trash"></i> Supprimer</button>
-          <button class="btn btn-sm" @click="showUserDelete=false"><i class="fas fa-times"></i></button>
-        </div>
-      </div>
-
-      <!-- Signalements -->
-      <div style="margin-top:2rem;border-top:1px solid var(--border);padding-top:1.5rem;">
-        <h3 style="color:var(--orange);"><i class="fas fa-flag"></i> Signalements</h3>
-        <div v-if="reports.length === 0" style="color:var(--text2);padding:0.5rem 0;">
-          Aucun signalement en attente.
-        </div>
-        <div v-for="report in reports" :key="report.id" style="background:var(--bg3);padding:0.8rem;border-radius:8px;margin-bottom:0.5rem;border:1px solid var(--border);">
-          <div><strong>{{ getUserName(report.userId) }}</strong> a signalé <strong>{{ report.itemTitle || 'un animé' }}</strong></div>
-          <div style="font-size:0.85rem;color:var(--text2);">Motif: {{ report.reason }}</div>
-          <div style="font-size:0.75rem;color:var(--text2);">{{ formatDateDisplay(report.date) }}</div>
-          <div style="margin-top:0.5rem;display:flex;gap:0.5rem;">
-            <button class="btn btn-sm btn-success" @click="resolveReport(report.id)"><i class="fas fa-check"></i> Résoudre</button>
-            <button class="btn btn-sm btn-danger" @click="ignoreReport(report.id)"><i class="fas fa-times"></i> Ignorer</button>
+          
+          <!-- Ajouter un film -->
+          <div v-if="adminPage === 'add-movie'" class="admin-form">
+            <h4 style="color:var(--accent2);margin-bottom:0.5rem;width:100%;">Ajouter un film</h4>
+            <div class="field"><label>Titre *</label><input v-model="adminForm.title" placeholder="Titre obligatoire"></div>
+            <div class="field"><label>Parties</label><input v-model.number="adminForm.parts" type="number" placeholder="1"></div>
+            <div class="field"><label>Studio / Réalisateur</label><input v-model="adminForm.studio" placeholder="Studio"></div>
+            <div class="field"><label>Année</label><input type="date" v-model="adminForm.releaseDate" /></div>
+            <div style="display:flex;gap:0.8rem;flex-wrap:wrap;width:100%;margin-top:0.5rem;">
+              <button class="btn btn-success" @click="adminSubmit('movie')"><i class="fas fa-check"></i> Ajouter</button>
+              <button class="btn btn-secondary" @click="adminPage=''"><i class="fas fa-times"></i> Annuler</button>
+            </div>
+          </div>
+          
+          <!-- Ajouter un OAV -->
+          <div v-if="adminPage === 'add-oav'" class="admin-form">
+            <h4 style="color:var(--accent2);margin-bottom:0.5rem;width:100%;">Ajouter un OAV</h4>
+            <div class="field"><label>Titre *</label><input v-model="adminForm.title" placeholder="Titre obligatoire"></div>
+            <div class="field"><label>Type OAV</label>
+              <select v-model="adminForm.oavType">
+                <option value="OAV">OAV</option>
+                <option value="Épisode spécial">Épisode spécial</option>
+                <option value="Live Action">Live Action</option>
+              </select>
+            </div>
+            <div class="field"><label>Nombre de parties / épisodes</label><input v-model.number="adminForm.parts" type="number" placeholder="1"></div>
+            <div class="field"><label>Studio / Réalisateur</label><input v-model="adminForm.studio" placeholder="Studio"></div>
+            <div class="field"><label>Année</label><input type="date" v-model="adminForm.releaseDate" /></div>
+            <div style="display:flex;gap:0.8rem;flex-wrap:wrap;width:100%;margin-top:0.5rem;">
+              <button class="btn btn-success" @click="adminSubmit('oav')"><i class="fas fa-check"></i> Ajouter</button>
+              <button class="btn btn-secondary" @click="adminPage=''"><i class="fas fa-times"></i> Annuler</button>
+            </div>
+          </div>
+          
+          <!-- Supprimer des animés -->
+          <div v-if="adminPage === 'delete-items'">
+            <h4 style="color:var(--red);margin-bottom:0.5rem;"><i class="fas fa-trash"></i> Supprimer des animés</h4>
+            <div style="display:flex;flex-wrap:wrap;gap:0.5rem;max-height:300px;overflow-y:auto;">
+              <div v-for="item in allPublished" :key="item.id" style="display:flex;align-items:center;gap:0.5rem;background:var(--bg3);padding:0.3rem 0.8rem;border-radius:20px;border:1px solid var(--border);">
+                <span style="font-size:0.8rem;">{{ item.title }}</span>
+                <button class="btn btn-sm btn-danger" @click="confirmDeleteItem(item.id, item.type)" style="padding:0.05rem 0.4rem;font-size:0.6rem;"><i class="fas fa-times"></i></button>
+              </div>
+            </div>
+            <button class="btn btn-sm" @click="adminPage=''" style="margin-top:0.5rem;">Fermer</button>
+          </div>
+          
+          <!-- Ajouter une catégorie -->
+          <div v-if="adminPage === 'add-category'">
+            <h4 style="color:var(--green);margin-bottom:0.5rem;"><i class="fas fa-tag"></i> Ajouter une catégorie</h4>
+            <div style="display:flex;gap:0.5rem;">
+              <input v-model="newCategory" placeholder="Nom de la catégorie" style="flex:1;background:var(--bg3);border:1px solid var(--border);padding:0.5rem 1rem;border-radius:40px;color:var(--text);outline:none;">
+              <button class="btn btn-success" @click="addCategory"><i class="fas fa-plus"></i> Ajouter</button>
+              <button class="btn btn-sm" @click="adminPage=''"><i class="fas fa-times"></i></button>
+            </div>
+          </div>
+          
+          <!-- Supprimer un utilisateur -->
+          <div v-if="adminPage === 'delete-user'">
+            <h4 style="color:var(--red);margin-bottom:0.5rem;"><i class="fas fa-user-minus"></i> Supprimer un utilisateur</h4>
+            <div style="display:flex;gap:0.5rem;flex-wrap:wrap;">
+              <select v-model="userToDelete" style="flex:1;min-width:200px;background:var(--bg3);border:1px solid var(--border);padding:0.5rem 1rem;border-radius:40px;color:var(--text);outline:none;">
+                <option value="">-- Sélectionner un utilisateur --</option>
+                <option v-for="user in deletableUsers" :key="user.id" :value="user.id">
+                  {{ user.displayName || user.username }} (@{{ user.username }})
+                </option>
+              </select>
+              <button class="btn btn-danger" @click="confirmDeleteUser"><i class="fas fa-trash"></i> Supprimer</button>
+              <button class="btn btn-sm" @click="adminPage=''"><i class="fas fa-times"></i></button>
+            </div>
+          </div>
+          
+          <!-- Signalements -->
+          <div v-if="adminPage === 'reports'">
+            <h4 style="color:var(--orange);margin-bottom:0.5rem;"><i class="fas fa-flag"></i> Signalements</h4>
+            <div v-if="reports.length === 0" style="color:var(--text2);padding:0.5rem 0;">
+              Aucun signalement en attente.
+            </div>
+            <div v-for="report in reports" :key="report.id" style="background:var(--bg3);padding:0.8rem;border-radius:8px;margin-bottom:0.5rem;border:1px solid var(--border);">
+              <div><strong>{{ getUserName(report.userId) }}</strong> a signalé <strong>{{ report.itemTitle || 'un animé' }}</strong></div>
+              <div style="font-size:0.85rem;color:var(--text2);">Motif: {{ report.reason }}</div>
+              <div style="font-size:0.75rem;color:var(--text2);">{{ formatDateDisplay(report.date) }}</div>
+              <div style="margin-top:0.5rem;display:flex;gap:0.5rem;">
+                <button class="btn btn-sm btn-success" @click="resolveReport(report.id)"><i class="fas fa-check"></i> Résoudre</button>
+                <button class="btn btn-sm btn-danger" @click="ignoreReport(report.id)"><i class="fas fa-times"></i> Ignorer</button>
+              </div>
+            </div>
+            <button class="btn btn-sm" @click="adminPage=''" style="margin-top:0.5rem;">Fermer</button>
           </div>
         </div>
       </div>
@@ -3947,7 +3997,7 @@
       </div>
       <i class="fas fa-dragon" style="color:var(--accent);"></i>
       <span class="brand">Skaymog</span>
-       {{ allItems.length }} animés
+       {{ totalAnimes }} animés
       <span style="color:var(--text2);font-size:0.7rem;margin-left:0.5rem;">
         <i class="fas fa-users"></i> {{ users.length }} utilisateurs
       </span>
@@ -4087,7 +4137,7 @@
   };
 
   // ============================================================
-  // LISTE COMPLÈTE DES ANIMÉS
+  // LISTE COMPLÈTE DES ANIMÉS (version simplifiée)
   // ============================================================
   function buildAllAnimes() {
     const allAnimes = [
@@ -4340,10 +4390,7 @@
       const upcomingSearch = ref('');
       const upcomingPage = ref(1);
       const upcomingForm = ref({ type: 'anime', title: '', ep: 0, parts: 1, saison: 1, studio: '', category: '', oavType: 'OAV', thumb: '', thumbPortrait: '', summary: '', releaseDate: '' });
-      const showAdminForm = ref(false);
-      const showDeleteItems = ref(false);
-      const showCategoryForm = ref(false);
-      const showUserDelete = ref(false);
+      const adminPage = ref('');
 
       const contextMenuVisible = ref(false);
       const contextMenuX = ref(0);
@@ -4467,6 +4514,7 @@
 
       // --- COMPUTED ---
       const allPublished = computed(() => [...animes.value, ...movies.value, ...ovas.value]);
+      const totalAnimes = computed(() => animes.value.length + movies.value.length);
       const allItems = computed(() => [...animes.value, ...movies.value, ...ovas.value, ...proposals.value.filter(p => p.status === 'published'), ...movieProposals.value.filter(p => p.status === 'published'), ...ovaProposals.value.filter(p => p.status === 'published')]);
 
       const upcomingItems = computed(() => newReleases.value);
@@ -5499,6 +5547,7 @@
         selectedItem.value = null;
         viewedUser.value = null;
         selectedChatUser.value = null;
+        adminPage.value = '';
         window.scrollTo({ top: 0, behavior: 'smooth' });
       };
       const goAnimes = () => {
@@ -5766,10 +5815,7 @@
       };
       const goToAdminPage = () => {
         currentPage.value = 'admin-page';
-        showAdminForm.value = false;
-        showDeleteItems.value = false;
-        showCategoryForm.value = false;
-        showUserDelete.value = false;
+        adminPage.value = '';
         window.scrollTo({ top: 0, behavior: 'smooth' });
       };
       const viewMyWatched = () => {
@@ -6031,7 +6077,7 @@
         adminForm.value = { type: 'anime', title: '', ep: 0, parts: 1, saison: 1, films: 0, studio: '', category: '', oavType: 'OAV',
           thumb: '', thumbPortrait: '', summary: '', status: 'published', editId: null, releaseDate: '' };
       };
-      const adminSubmit = async () => {
+      const adminSubmit = async (type) => {
         if (!adminForm.value.title.trim()) {
           showToast('Le titre est obligatoire', 'warning');
           return;
@@ -6051,9 +6097,9 @@
           isNewlyAdded: false
         };
         let data;
-        if (adminForm.value.type === 'movie') {
+        if (type === 'movie') {
           data = { ...baseData, type: 'movie', parts: adminForm.value.parts || 1 };
-        } else if (adminForm.value.type === 'oav') {
+        } else if (type === 'oav') {
           data = { ...baseData, type: 'oav', parts: adminForm.value.parts || 1, oavType: adminForm.value.oavType || 'OAV' };
         } else {
           data = { ...baseData, type: 'anime', ep: adminForm.value.ep || 0, saison: adminForm.value.saison || 1,
@@ -6061,16 +6107,16 @@
         }
         
         data.createdBy = currentUser.value.id;
-        if (adminForm.value.type === 'movie') {
+        if (type === 'movie') {
           await addMovie(data);
-        } else if (adminForm.value.type === 'oav') {
+        } else if (type === 'oav') {
           await addOva(data);
         } else {
           await addAnime(data);
         }
         showToast('Animé ajouté avec succès !', 'success');
         resetAdminForm();
-        showAdminForm.value = false;
+        adminPage.value = '';
         await saveAll();
       };
 
@@ -6095,7 +6141,9 @@
           editId: item.id
         };
         currentPage.value = 'admin-page';
-        showAdminForm.value = true;
+        if (item.type === 'anime') adminPage.value = 'add-series';
+        else if (item.type === 'movie') adminPage.value = 'add-movie';
+        else if (item.type === 'oav') adminPage.value = 'add-oav';
         window.scrollTo({ top: 0, behavior: 'smooth' });
       };
 
@@ -6111,8 +6159,8 @@
             }
             if (selectedItem.value && selectedItem.value.id === id) selectedItem.value = null;
             showToast('Animé supprimé', 'success');
-            if (showDeleteItems.value) {
-              showDeleteItems.value = false;
+            if (adminPage.value === 'delete-items') {
+              // Reste sur la même page
             }
           }
         });
@@ -6755,7 +6803,7 @@
           saveAll();
           showToast('Utilisateur supprimé.', 'success');
           userToDelete.value = '';
-          showUserDelete.value = false;
+          adminPage.value = '';
         });
       };
 
@@ -6775,7 +6823,7 @@
             newCategory.value = '';
             saveAll();
             showToast('Catégorie ajoutée !', 'success');
-            showCategoryForm.value = false;
+            adminPage.value = '';
           }
         });
       };
@@ -6935,13 +6983,13 @@
         showSettings, settingsTab, settingsDisplayName, settingsPassword, newCategory,
         colorPalette, selectedColor, userToDelete, deletableUsers,
         upcomingSearch, upcomingPage, upcomingForm,
-        showAdminForm, showDeleteItems, showCategoryForm, showUserDelete,
+        adminPage,
         watchedList, toWatchList, customLists, recommendations, followers, friends, messages, selectedChatUser, newMessage, typingStatus, isRecording, chatMessagesRef,
         currentAdminCode, loginUsername, loginPassword, loginError, loginSuccess,
         registerDisplayName, registerUsername, registerPassword, registerError, registerSuccess,
         adminCodeInput, adminCodeError, adminForm, proposalForm, profileForm,
         categories, proposalSearch, proposalPage,
-        allPublished, allItems, upcomingItems, publishedAnimes, publishedMovies, publishedSeries, publishedOvas,
+        allPublished, totalAnimes, allItems, upcomingItems, publishedAnimes, publishedMovies, publishedSeries, publishedOvas,
         animeItems, animeTotalPages, paginatedAnimes,
         seriesItems, seriesTotalPages, paginatedSeries,
         movieItems, movieTotalPages, paginatedMovies,
