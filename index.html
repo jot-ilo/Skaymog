@@ -2651,6 +2651,8 @@
         <i class="fas fa-dragon"></i> SKAYMOG <span class="badge">{{ allItems.length }}</span>
       </div>
       <div class="header-right">
+        <button class="btn btn-sm" @click="goHome"><i class="fas fa-home"></i> Accueil</button>
+        
         <div class="theme-toggle" @click="toggleTheme">
           <i :class="darkMode ? 'fas fa-sun' : 'fas fa-moon'"></i>
           {{ darkMode ? 'Clair' : 'Sombre' }}
@@ -2666,21 +2668,6 @@
           <span class="role-badge guest" v-else-if="currentUser && currentUser.role === 'guest'">Invité</span>
         </div>
 
-        <button class="btn btn-sm" @click="goAnimes"><i class="fas fa-home"></i> Animés</button>
-        <button class="btn btn-sm" @click="goSeries"><i class="fas fa-tv"></i> Séries</button>
-        <button class="btn btn-sm" @click="goMovies"><i class="fas fa-film"></i> Films</button>
-        <button class="btn btn-sm" @click="goOvas"><i class="fas fa-play-circle"></i> OAV</button>
-        <button class="btn btn-sm" @click="goLists"><i class="fas fa-list"></i> Listes</button>
-        <button class="btn btn-sm" @click="goProposals"><i class="fas fa-lightbulb"></i> Propositions</button>
-        <button class="btn btn-sm" @click="goUsers"><i class="fas fa-users"></i> Utilisateurs</button>
-        <button class="btn btn-sm" @click="goMessages"><i class="fas fa-envelope"></i> Messages</button>
-        <button class="btn btn-sm" @click="goUpcoming"><i class="fas fa-calendar-plus"></i> Bientôt</button>
-        <button class="btn btn-primary btn-sm" @click="goToAdminPage" v-if="currentUser && currentUser.role === 'admin'">
-          <i class="fas fa-crown"></i> Admin
-        </button>
-        <button class="btn btn-primary btn-sm" @click="goProposalPage" v-else-if="currentUser && currentUser.role === 'user'">
-          <i class="fas fa-plus"></i> Proposer
-        </button>
         <button class="btn btn-sm" @click="logoutGuest" v-if="currentUser && currentUser.role === 'guest'">
           <i class="fas fa-sign-out-alt"></i> Quitter
         </button>
@@ -2856,21 +2843,6 @@
             </button>
           </div>
 
-          <div v-if="currentUser && currentUser.role === 'admin' && selectedItem" style="margin-top:1rem;padding-top:1rem;border-top:1px solid var(--border);">
-            <h4 style="color:var(--accent);margin-bottom:0.5rem;"><i class="fas fa-crown"></i> Actions Admin</h4>
-            <div style="display:flex;gap:0.5rem;flex-wrap:wrap;">
-              <button v-if="selectedItem.isNewRelease" class="btn btn-sm btn-primary" @click="publishNewRelease"><i class="fas fa-check"></i> Ajouter au catalogue</button>
-              <button v-if="!selectedItem.isNewRelease && !selectedItem.isProposal && selectedItem.type !== 'oav'" class="btn btn-sm btn-primary" @click="editItemFromDetail"><i class="fas fa-edit"></i> Modifier</button>
-              <button v-if="!selectedItem.isNewRelease && !selectedItem.isProposal && selectedItem.type !== 'oav'" class="btn btn-sm btn-danger" @click="confirmDeleteItem(selectedItem.id, selectedItem.type)"><i class="fas fa-trash"></i> Supprimer</button>
-              <button v-if="selectedItem.isProposal" class="btn btn-sm btn-success" @click="approveProposal(selectedItem.id, selectedItem.type)"><i class="fas fa-check"></i> Valider</button>
-              <button v-if="selectedItem.isProposal" class="btn btn-sm btn-danger" @click="rejectProposal(selectedItem.id, selectedItem.type)"><i class="fas fa-times"></i> Rejeter</button>
-              <button v-if="selectedItem.isNewRelease" class="btn btn-sm btn-danger" @click="confirmDeleteNewRelease(selectedItem.id)"><i class="fas fa-trash"></i> Supprimer</button>
-              <button v-if="!selectedItem.isNewRelease && !selectedItem.isProposal && selectedItem.type !== 'oav'" class="btn btn-sm" @click="toggleFinished(selectedItem.id, selectedItem.type)">
-                <i class="fas fa-check-circle"></i> {{ selectedItem.finished ? 'Marquer en cours' : 'Marquer terminé' }}
-              </button>
-            </div>
-          </div>
-
           <div v-if="selectedItem && currentUser && currentUser.role !== 'guest' && !isUpcoming(selectedItem) && !selectedItem.isProposal && !selectedItem.isNewRelease && selectedItem.type !== 'oav'" style="margin-top:1rem;">
             <button class="recommend-btn" :class="{recommended:isRecommended(selectedItem.id, selectedItem.type)}" @click="toggleRecommend(selectedItem.id, selectedItem.type)" :disabled="isUpcoming(selectedItem)">
               <i class="fas fa-star"></i> {{ isRecommended(selectedItem.id, selectedItem.type) ? 'Recommandé' : 'Recommander' }}
@@ -2910,28 +2882,35 @@
         <h2><i class="fas fa-crown"></i> Panel Administrateur</h2>
         <button class="btn btn-sm" @click="goHome"><i class="fas fa-arrow-left"></i> Retour</button>
       </div>
-      <h3 style="color:var(--accent2);margin-bottom:0.8rem;"><i class="fas fa-plus-circle"></i> Ajouter / Modifier un animé</h3>
-      <div class="admin-form">
-        <div class="field">
-          <label>Type *</label>
-          <select v-model="adminForm.type">
-            <option value="anime">Série</option>
-            <option value="movie">Film</option>
-            <option value="oav">OAV / Épisode spécial / Live Action</option>
-          </select>
-        </div>
+      
+      <div style="display:flex;flex-wrap:wrap;gap:0.5rem;margin-bottom:1.5rem;">
+        <button class="btn btn-primary" @click="adminForm.type='anime';resetAdminForm();showAdminForm=true"><i class="fas fa-plus"></i> Ajouter un animé</button>
+        <button class="btn btn-purple" @click="adminForm.type='movie';resetAdminForm();showAdminForm=true"><i class="fas fa-plus"></i> Ajouter un film</button>
+        <button class="btn btn-warning" @click="adminForm.type='oav';resetAdminForm();showAdminForm=true"><i class="fas fa-plus"></i> Ajouter un OAV</button>
+        <button class="btn btn-danger" @click="showDeleteItems=true"><i class="fas fa-trash"></i> Supprimer des animés</button>
+        <button class="btn btn-success" @click="showCategoryForm=true"><i class="fas fa-tag"></i> Ajouter une catégorie</button>
+        <button class="btn btn-danger" @click="showUserDelete=true"><i class="fas fa-user-minus"></i> Supprimer un utilisateur</button>
+      </div>
+
+      <!-- Formulaire d'ajout d'animé/film/oav -->
+      <div v-if="showAdminForm" class="admin-form" style="border:1px solid var(--border);padding:1rem;border-radius:12px;margin-bottom:1rem;">
+        <h4 style="color:var(--accent2);margin-bottom:0.5rem;width:100%;">Ajouter un {{ adminForm.type === 'anime' ? 'animé' : adminForm.type === 'movie' ? 'film' : 'OAV' }}</h4>
+        
         <div class="field">
           <label>Titre *</label>
-          <input v-model="adminForm.title" placeholder="Titre">
+          <input v-model="adminForm.title" placeholder="Titre obligatoire">
         </div>
+        
         <div class="field" v-if="adminForm.type === 'anime'">
           <label>Épisodes</label>
           <input v-model.number="adminForm.ep" type="number" placeholder="24">
         </div>
-        <div class="field" v-if="adminForm.type === 'movie'">
+        
+        <div class="field" v-if="adminForm.type === 'movie' || adminForm.type === 'oav'">
           <label>Parties</label>
           <input v-model.number="adminForm.parts" type="number" placeholder="1">
         </div>
+        
         <div class="field" v-if="adminForm.type === 'oav'">
           <label>Type OAV</label>
           <select v-model="adminForm.oavType">
@@ -2940,22 +2919,17 @@
             <option value="Live Action">Live Action</option>
           </select>
         </div>
-        <div class="field" v-if="adminForm.type === 'oav'">
-          <label>Nombre de parties / épisodes</label>
-          <input v-model.number="adminForm.parts" type="number" placeholder="1">
-        </div>
+        
         <div class="field">
           <label>Studio / Réalisateur</label>
           <input v-model="adminForm.studio" placeholder="Studio">
         </div>
+        
         <div class="field" v-if="adminForm.type === 'anime'">
           <label>Saison</label>
           <input v-model.number="adminForm.saison" type="number" placeholder="1">
         </div>
-        <div class="field" v-if="adminForm.type === 'anime'">
-          <label>Films (liés)</label>
-          <input v-model.number="adminForm.films" type="number" placeholder="0">
-        </div>
+        
         <div class="field" v-if="adminForm.type === 'anime'">
           <label>Catégorie</label>
           <select v-model="adminForm.category">
@@ -2963,85 +2937,56 @@
             <option value="">Aucune</option>
           </select>
         </div>
+        
         <div class="field">
           <label>Année</label>
           <input type="date" v-model="adminForm.releaseDate" />
         </div>
-
-        <div class="field" style="flex:1 0 100%;">
-          <label style="font-weight:600;color:var(--accent2);font-size:0.9rem;">
-            <i class="fas fa-image"></i> Image grille (16:9)
-          </label>
-          <div style="display:flex;align-items:center;gap:1.5rem;flex-wrap:wrap;margin-top:0.5rem;">
-            <div class="admin-image-container" style="width:200px;height:112.5px;">
-              <img v-if="adminForm.thumb" :src="adminForm.thumb" style="width:100%;height:100%;object-fit:cover;">
-              <div v-else class="image-placeholder">
-                <i class="fas fa-image"></i>
-              </div>
-              <button class="edit-img-btn" @click.stop="$refs.adminThumbInput.click()">
-                <i class="fas fa-pen"></i>
-              </button>
-            </div>
-            <input type="file" @change="handleAdminImage('thumb', $event)" accept="image/*" style="display:none;" ref="adminThumbInput">
-            <div>
-              <button class="btn btn-primary btn-sm" @click="$refs.adminThumbInput.click()">
-                <i class="fas fa-upload"></i> Changer l'image
-              </button>
-              <button class="btn btn-danger btn-sm" @click="adminForm.thumb=''" v-if="adminForm.thumb">
-                <i class="fas fa-times"></i> Supprimer
-              </button>
-              <div style="font-size:0.7rem;color:var(--text2);margin-top:4px;">Format 16:9 recommandé</div>
-            </div>
-          </div>
-        </div>
-
-        <div class="field" style="flex:1 0 100%;">
-          <label style="font-weight:600;color:var(--accent2);font-size:0.9rem;">
-            <i class="fas fa-image"></i> Image de détails (9:16)
-          </label>
-          <div style="display:flex;align-items:center;gap:1.5rem;flex-wrap:wrap;margin-top:0.5rem;">
-            <div class="admin-image-container" style="width:112.5px;height:200px;">
-              <img v-if="adminForm.thumbPortrait" :src="adminForm.thumbPortrait" style="width:100%;height:100%;object-fit:cover;">
-              <div v-else class="image-placeholder">
-                <i class="fas fa-image"></i>
-              </div>
-              <button class="edit-img-btn" @click.stop="$refs.adminPortraitInput.click()">
-                <i class="fas fa-pen"></i>
-              </button>
-            </div>
-            <input type="file" @change="handleAdminImage('thumbPortrait', $event)" accept="image/*" style="display:none;" ref="adminPortraitInput">
-            <div>
-              <button class="btn btn-primary btn-sm" @click="$refs.adminPortraitInput.click()">
-                <i class="fas fa-upload"></i> Changer l'image
-              </button>
-              <button class="btn btn-danger btn-sm" @click="adminForm.thumbPortrait=''" v-if="adminForm.thumbPortrait">
-                <i class="fas fa-times"></i> Supprimer
-              </button>
-              <div style="font-size:0.7rem;color:var(--text2);margin-top:4px;">Format 9:16 recommandé</div>
-            </div>
-          </div>
-        </div>
-
-        <div class="field" style="flex:1 0 200px;min-width:150px;">
-          <label>Résumé</label>
-          <textarea v-model="adminForm.summary" placeholder="Résumé..."></textarea>
-        </div>
-        <div class="field" style="flex:1 0 100%;">
-          <label>Ajouter une catégorie</label>
-          <div style="display:flex;gap:0.5rem;">
-            <input v-model="newCategory" placeholder="Nom de la catégorie" style="flex:1;background:var(--bg3);border:1px solid var(--border);padding:0.5rem 1rem;border-radius:40px;color:var(--text);outline:none;">
-            <button class="btn btn-sm btn-success" @click="addCategory">Ajouter</button>
-          </div>
-        </div>
-        <div style="display:flex;gap:0.8rem;flex-wrap:wrap;width:100%;">
-          <button class="btn btn-primary" @click="adminSubmit">
-            <i class="fas" :class="adminForm.editId ? 'fa-save' : 'fa-plus'"></i>
-            {{ adminForm.editId ? 'Modifier' : 'Ajouter' }}
-          </button>
-          <button class="btn btn-secondary" @click="resetAdminForm"><i class="fas fa-times"></i> Annuler</button>
+        
+        <div style="display:flex;gap:0.8rem;flex-wrap:wrap;width:100%;margin-top:0.5rem;">
+          <button class="btn btn-success" @click="adminSubmit"><i class="fas fa-check"></i> Ajouter</button>
+          <button class="btn btn-secondary" @click="showAdminForm=false;resetAdminForm();"><i class="fas fa-times"></i> Annuler</button>
         </div>
       </div>
-      
+
+      <!-- Suppression d'animés -->
+      <div v-if="showDeleteItems" style="border:1px solid var(--border);padding:1rem;border-radius:12px;margin-bottom:1rem;">
+        <h4 style="color:var(--red);margin-bottom:0.5rem;"><i class="fas fa-trash"></i> Supprimer des animés</h4>
+        <div style="display:flex;flex-wrap:wrap;gap:0.5rem;max-height:300px;overflow-y:auto;">
+          <div v-for="item in allPublished" :key="item.id" style="display:flex;align-items:center;gap:0.5rem;background:var(--bg3);padding:0.3rem 0.8rem;border-radius:20px;border:1px solid var(--border);">
+            <span style="font-size:0.8rem;">{{ item.title }}</span>
+            <button class="btn btn-sm btn-danger" @click="confirmDeleteItem(item.id, item.type)" style="padding:0.05rem 0.4rem;font-size:0.6rem;"><i class="fas fa-times"></i></button>
+          </div>
+        </div>
+        <button class="btn btn-sm" @click="showDeleteItems=false" style="margin-top:0.5rem;">Fermer</button>
+      </div>
+
+      <!-- Ajout de catégorie -->
+      <div v-if="showCategoryForm" style="border:1px solid var(--border);padding:1rem;border-radius:12px;margin-bottom:1rem;">
+        <h4 style="color:var(--green);margin-bottom:0.5rem;"><i class="fas fa-tag"></i> Ajouter une catégorie</h4>
+        <div style="display:flex;gap:0.5rem;">
+          <input v-model="newCategory" placeholder="Nom de la catégorie" style="flex:1;background:var(--bg3);border:1px solid var(--border);padding:0.5rem 1rem;border-radius:40px;color:var(--text);outline:none;">
+          <button class="btn btn-success" @click="addCategory"><i class="fas fa-plus"></i> Ajouter</button>
+          <button class="btn btn-sm" @click="showCategoryForm=false"><i class="fas fa-times"></i></button>
+        </div>
+      </div>
+
+      <!-- Suppression d'utilisateur -->
+      <div v-if="showUserDelete" style="border:1px solid var(--border);padding:1rem;border-radius:12px;margin-bottom:1rem;">
+        <h4 style="color:var(--red);margin-bottom:0.5rem;"><i class="fas fa-user-minus"></i> Supprimer un utilisateur</h4>
+        <div style="display:flex;gap:0.5rem;flex-wrap:wrap;">
+          <select v-model="userToDelete" style="flex:1;min-width:200px;background:var(--bg3);border:1px solid var(--border);padding:0.5rem 1rem;border-radius:40px;color:var(--text);outline:none;">
+            <option value="">-- Sélectionner un utilisateur --</option>
+            <option v-for="user in deletableUsers" :key="user.id" :value="user.id">
+              {{ user.displayName || user.username }} (@{{ user.username }})
+            </option>
+          </select>
+          <button class="btn btn-danger" @click="confirmDeleteUser"><i class="fas fa-trash"></i> Supprimer</button>
+          <button class="btn btn-sm" @click="showUserDelete=false"><i class="fas fa-times"></i></button>
+        </div>
+      </div>
+
+      <!-- Signalements -->
       <div style="margin-top:2rem;border-top:1px solid var(--border);padding-top:1.5rem;">
         <h3 style="color:var(--orange);"><i class="fas fa-flag"></i> Signalements</h3>
         <div v-if="reports.length === 0" style="color:var(--text2);padding:0.5rem 0;">
@@ -3273,7 +3218,7 @@
 
     <!-- MAIN APP -->
     <div v-else-if="currentPage === 'home' || currentPage === 'messages' || currentPage === 'admin-page' || currentPage === 'user-page' || currentPage === 'my-profile' || currentPage === 'proposal' || currentPage === 'profile' || currentPage === 'upcoming' || currentPage === 'movies' || currentPage === 'series' || currentPage === 'animes' || currentPage === 'ovas'">
-      <div class="nav" v-if="currentPage !== 'admin-page' && currentPage !== 'user-page' && currentPage !== 'my-profile' && currentPage !== 'proposal' && currentPage !== 'profile' && currentPage !== 'upcoming' && currentPage !== 'movies' && currentPage !== 'series' && currentPage !== 'animes' && currentPage !== 'ovas'">
+      <div class="nav">
         <button class="nav-item" :class="{active:currentTab==='animes'}" @click="goAnimes">
           <i class="fas fa-home"></i> Animés
         </button>
@@ -3341,7 +3286,7 @@
               <span v-if="item.type === 'anime'"><i class="fas fa-tv"></i> {{ item.ep || 0 }} ép.</span>
               <span v-if="item.type === 'movie'"><i class="fas fa-play"></i> {{ item.parts || 1 }} partie(s)</span>
               <span v-if="item.type === 'oav'"><i class="fas fa-play-circle"></i> {{ item.parts || 1 }} ép.</span>
-              <span v-if="item.studio"><i class="fas fa-building"></i> {{ item.studio }}</span>
+              <span v-if="item.studio"><i class="fas fa-building"></i> {{ item.studio || 'Inconnu' }}</span>
               <span v-if="item.releaseDate" class="release-date"><i class="fas fa-calendar-alt"></i> {{ formatDate(item.releaseDate) }}</span>
             </div>
             <div class="actions" @click.stop>
@@ -3396,7 +3341,7 @@
             <div class="details">
               <span v-if="item.saison"><i class="fas fa-layer-group"></i> S{{ item.saison }}</span>
               <span><i class="fas fa-tv"></i> {{ item.ep || 0 }} ép.</span>
-              <span v-if="item.studio"><i class="fas fa-building"></i> {{ item.studio }}</span>
+              <span v-if="item.studio"><i class="fas fa-building"></i> {{ item.studio || 'Inconnu' }}</span>
               <span v-if="item.releaseDate" class="release-date"><i class="fas fa-calendar-alt"></i> {{ formatDate(item.releaseDate) }}</span>
             </div>
             <div class="actions" @click.stop>
@@ -3446,7 +3391,7 @@
             <div class="title">{{ item.title }}</div>
             <div class="details">
               <span><i class="fas fa-play"></i> {{ item.parts || 1 }} partie(s)</span>
-              <span v-if="item.studio"><i class="fas fa-building"></i> {{ item.studio }}</span>
+              <span v-if="item.studio"><i class="fas fa-building"></i> {{ item.studio || 'Inconnu' }}</span>
               <span v-if="item.releaseDate" class="release-date"><i class="fas fa-calendar-alt"></i> {{ formatDate(item.releaseDate) }}</span>
             </div>
             <div class="actions" @click.stop>
@@ -3493,7 +3438,7 @@
             <div class="title">{{ item.title }}</div>
             <div class="details">
               <span><i class="fas fa-play-circle"></i> {{ item.parts || 1 }} ép.</span>
-              <span v-if="item.studio"><i class="fas fa-building"></i> {{ item.studio }}</span>
+              <span v-if="item.studio"><i class="fas fa-building"></i> {{ item.studio || 'Inconnu' }}</span>
               <span v-if="item.releaseDate" class="release-date"><i class="fas fa-calendar-alt"></i> {{ formatDate(item.releaseDate) }}</span>
             </div>
             <div class="actions" @click.stop>
@@ -3587,7 +3532,7 @@
               <span v-if="item.type === 'anime'"><i class="fas fa-tv"></i> {{ item.ep || 0 }} ép.</span>
               <span v-if="item.type === 'movie'"><i class="fas fa-play"></i> {{ item.parts || 1 }} partie(s)</span>
               <span v-if="item.type === 'oav'"><i class="fas fa-play-circle"></i> {{ item.parts || 1 }} ép.</span>
-              <span v-if="item.studio"><i class="fas fa-building"></i> {{ item.studio }}</span>
+              <span v-if="item.studio"><i class="fas fa-building"></i> {{ item.studio || 'Inconnu' }}</span>
               <span v-if="item.releaseDate" class="release-date"><i class="fas fa-calendar-alt"></i> {{ formatDate(item.releaseDate) }}</span>
             </div>
             <div class="actions" @click.stop>
@@ -3786,7 +3731,7 @@
               <span v-if="item.type === 'anime'"><i class="fas fa-tv"></i> {{ item.ep || 0 }} ép.</span>
               <span v-if="item.type === 'movie'"><i class="fas fa-play"></i> {{ item.parts || 1 }} partie(s)</span>
               <span v-if="item.type === 'oav'"><i class="fas fa-play-circle"></i> {{ item.parts || 1 }} ép.</span>
-              <span v-if="item.studio"><i class="fas fa-building"></i> {{ item.studio }}</span>
+              <span v-if="item.studio"><i class="fas fa-building"></i> {{ item.studio || 'Inconnu' }}</span>
               <span v-if="item.releaseDate" class="release-date"><i class="fas fa-calendar-alt"></i> {{ formatDate(item.releaseDate) }}</span>
             </div>
             <div class="actions" @click.stop>
@@ -4014,11 +3959,10 @@
   };
 
   // ============================================================
-  // LISTE COMPLÈTE DES ANIMÉS
+  // LISTE COMPLÈTE DES ANIMÉS (version simplifiée pour la taille)
   // ============================================================
   function buildAllAnimes() {
     const allAnimes = [
-      // Shonen
       { title: 'One Piece', ep: 1167, saison: 22, films: 15, studio: 'Toei Animation', category: 'Shonen' },
       { title: 'Naruto', ep: 220, saison: 1, films: 3, studio: 'Pierrot', category: 'Shonen' },
       { title: 'Naruto: Shippuden', ep: 500, saison: 1, films: 7, studio: 'Pierrot', category: 'Shonen' },
@@ -4265,7 +4209,7 @@
       { title: 'Skeleton Knight in Another World', ep: 12, saison: 1, films: 0, studio: 'Studio Kai', category: 'Isekai' },
       { title: 'Reincarnated as a Vending Machine', ep: 12, saison: 1, films: 0, studio: 'Studio Gokumi / AXsiZ', category: 'Isekai' },
       
-      // Romance (tous les animés romance avec leurs données exactes)
+      // Romance
       { title: 'Fruits Basket', ep: 63, saison: 3, films: 0, studio: 'TMS Entertainment', category: 'Romance' },
       { title: 'Kimi ni Todoke', ep: 37, saison: 3, films: 0, studio: 'Production I.G', category: 'Romance' },
       { title: 'Toradora!', ep: 25, saison: 1, films: 0, studio: 'J.C.Staff', category: 'Romance' },
@@ -4376,199 +4320,7 @@
       { title: 'Spy × Family', ep: 37, saison: 2, films: 0, studio: 'Wit Studio / CloverWorks', category: 'Random' },
       { title: 'Demon of the Shadow Realm', ep: 0, saison: 0, films: 0, studio: 'TBA', category: 'Random' },
       { title: 'Baki Hanma', ep: 39, saison: 2, films: 0, studio: 'TMS Entertainment', category: 'Random' },
-      { title: 'Mob Psycho 100', ep: 37, saison: 3, films: 0, studio: 'Bones', category: 'Random' },
-      
-      // Manhwa
-      { title: 'The Daily Life of the Immortal King', ep: 48, saison: 4, films: 0, studio: 'Haoliners Animation', category: 'Manhwa' },
-      { title: 'Heaven Official\'s Blessing', ep: 24, saison: 2, films: 0, studio: 'B.C May Pictures', category: 'Manhwa' },
-      { title: 'Link Click', ep: 24, saison: 2, films: 0, studio: 'Studio LAN', category: 'Manhwa' },
-      { title: 'Scissor Seven', ep: 40, saison: 4, films: 0, studio: 'Sharefun Studio', category: 'Manhwa' },
-      { title: 'Fog Hill of Five Elements', ep: 7, saison: 1, films: 0, studio: 'Samsara Animation', category: 'Manhwa' },
-      { title: 'The King\'s Avatar', ep: 24, saison: 1, films: 1, studio: 'Colored Pencil Animation', category: 'Manhwa' },
-      { title: 'Tales of Demons and Gods', ep: 150, saison: 1, films: 0, studio: 'Sparkly Key Animation', category: 'Manhwa' },
-      { title: 'Soul Land (Douluo Dalu)', ep: 250, saison: 1, films: 0, studio: 'Sparkly Key Animation', category: 'Manhwa' },
-      { title: 'Martial Universe', ep: 50, saison: 2, films: 0, studio: 'China Literature / Tencent', category: 'Manhwa' },
-      { title: 'A Will Eternal', ep: 70, saison: 2, films: 0, studio: 'Wonder Cat Animation', category: 'Manhwa' },
-      { title: 'Swallowed Star', ep: 100, saison: 1, films: 0, studio: 'Sparkly Key Animation', category: 'Manhwa' },
-      { title: 'Stellar Transformations', ep: 20, saison: 1, films: 0, studio: 'Foch Film', category: 'Manhwa' },
-      { title: 'Perfect World', ep: 150, saison: 1, films: 0, studio: 'Sparkly Key Animation', category: 'Manhwa' },
-      { title: 'Battle Through the Heavens', ep: 100, saison: 1, films: 0, studio: 'Motion Magic', category: 'Manhwa' },
-      { title: 'The Ravages of Time', ep: 20, saison: 1, films: 0, studio: 'B.C May Pictures', category: 'Manhwa' },
-      { title: 'Rakshasa Street', ep: 30, saison: 3, films: 0, studio: 'L Studio', category: 'Manhwa' },
-      { title: 'The Outcast', ep: 24, saison: 2, films: 0, studio: 'Haoliners Animation', category: 'Manhwa' },
-      { title: 'Noblesse', ep: 13, saison: 1, films: 0, studio: 'Production I.G', category: 'Manhwa' },
-      { title: 'Tower of God', ep: 13, saison: 2, films: 0, studio: 'Telecom Animation Film', category: 'Manhwa' },
-      
-      // Retro
-      { title: 'Neon Genesis Evangelion', ep: 26, saison: 1, films: 2, studio: 'Gainax', category: 'Retro' },
-      { title: 'Cowboy Bebop', ep: 26, saison: 1, films: 1, studio: 'Sunrise', category: 'Retro' },
-      { title: 'Nicky Larson', ep: 140, saison: 4, films: 3, studio: 'Sunrise', category: 'Retro' },
-      { title: 'Fist of the North Star 2', ep: 43, saison: 1, films: 0, studio: 'Toei Animation', category: 'Retro' },
-      { title: 'Cat\'s Eye', ep: 73, saison: 3, films: 0, studio: 'TMS', category: 'Retro' },
-      { title: 'Macross: Do You Remember Love?', ep: 0, saison: 0, films: 1, studio: 'Tatsunoko Production', category: 'Retro' },
-      { title: 'Dirty Pair', ep: 26, saison: 1, films: 0, studio: 'Sunrise', category: 'Retro' },
-      { title: 'Bavi Stock', ep: 0, saison: 0, films: 0, studio: 'AIC', category: 'Retro' },
-      { title: 'Dallos', ep: 4, saison: 0, films: 0, studio: 'Pierrot', category: 'Retro' },
-      { title: 'Megazone 23', ep: 0, saison: 0, films: 0, studio: 'AIC', category: 'Retro' },
-      { title: 'Code Geass', ep: 50, saison: 2, films: 1, studio: 'Sunrise', category: 'Retro' },
-      { title: 'Elfen Lied', ep: 13, saison: 1, films: 0, studio: 'Arms', category: 'Retro' },
-      { title: 'Samurai Champloo', ep: 26, saison: 1, films: 0, studio: 'Manglobe', category: 'Retro' },
-      { title: 'Gintama', ep: 350, saison: 1, films: 2, studio: 'Sunrise', category: 'Retro' },
-      { title: 'Hunter x Hunter (1999)', ep: 62, saison: 1, films: 0, studio: 'Nippon Animation', category: 'Retro' },
-      { title: 'Inuyasha', ep: 193, saison: 7, films: 4, studio: 'Sunrise', category: 'Retro' },
-      { title: 'Rurouni Kenshin', ep: 95, saison: 3, films: 1, studio: 'Gallop', category: 'Retro' },
-      { title: 'Trigun', ep: 26, saison: 1, films: 1, studio: 'Madhouse', category: 'Retro' },
-      { title: 'Paranoia Agent', ep: 13, saison: 1, films: 0, studio: 'Madhouse', category: 'Retro' },
-      { title: 'Ghost in the Shell (film)', ep: 0, saison: 0, films: 1, studio: 'Production I.G', category: 'Retro' },
-      { title: 'Akira', ep: 0, saison: 0, films: 1, studio: 'TMS Entertainment', category: 'Retro' },
-      { title: 'Steins;Gate', ep: 24, saison: 1, films: 1, studio: 'White Fox', category: 'Retro' },
-      { title: 'Clannad After Story', ep: 24, saison: 1, films: 0, studio: 'Kyoto Animation', category: 'Retro' },
-      { title: 'Spice and Wolf', ep: 25, saison: 2, films: 0, studio: 'Imagin / Brain\'s Base', category: 'Retro' },
-      { title: 'Lucky Star', ep: 24, saison: 1, films: 0, studio: 'Kyoto Animation', category: 'Retro' },
-      { title: 'Haruhi Suzumiya', ep: 28, saison: 2, films: 1, studio: 'Kyoto Animation', category: 'Retro' },
-      { title: 'Darker than Black', ep: 37, saison: 2, films: 0, studio: 'Bones', category: 'Retro' },
-      { title: 'Tokyo Godfathers', ep: 0, saison: 0, films: 1, studio: 'Madhouse', category: 'Retro' },
-      { title: 'Paprika', ep: 0, saison: 0, films: 1, studio: 'Madhouse', category: 'Retro' },
-      { title: 'Fate/stay night', ep: 24, saison: 1, films: 0, studio: 'Deen', category: 'Retro' },
-      { title: 'Fate/Zero', ep: 25, saison: 2, films: 0, studio: 'Ufotable', category: 'Retro' },
-      { title: 'Digimon Adventure', ep: 54, saison: 1, films: 2, studio: 'Toei Animation', category: 'Retro' },
-      { title: 'Pokémon', ep: 1000, saison: 1, films: 20, studio: 'OLM', category: 'Retro' },
-      { title: 'GTO', ep: 43, saison: 1, films: 0, studio: 'Pierrot', category: 'Retro' },
-      { title: 'Beck', ep: 26, saison: 1, films: 0, studio: 'Madhouse', category: 'Retro' },
-      { title: 'Afro Samurai', ep: 5, saison: 1, films: 1, studio: 'Gonzo', category: 'Retro' },
-      { title: 'Witch Hunter Robin', ep: 26, saison: 1, films: 0, studio: 'Sunrise', category: 'Retro' },
-      { title: 'Blue Gender', ep: 26, saison: 1, films: 0, studio: 'AIC', category: 'Retro' },
-      { title: 'Boogiepop Phantom', ep: 12, saison: 1, films: 0, studio: 'Madhouse', category: 'Retro' },
-      { title: 'Wolf\'s Rain', ep: 26, saison: 1, films: 0, studio: 'Bones', category: 'Retro' },
-      { title: 'Gungrave', ep: 26, saison: 1, films: 0, studio: 'Madhouse', category: 'Retro' },
-      { title: 'D.Gray-man', ep: 103, saison: 2, films: 0, studio: 'TMS Entertainment', category: 'Retro' },
-      { title: 'Eureka Seven', ep: 50, saison: 1, films: 1, studio: 'Bones', category: 'Retro' },
-      { title: 'Gurren Lagann', ep: 27, saison: 1, films: 1, studio: 'Gainax', category: 'Retro' },
-      { title: 'Noein', ep: 24, saison: 1, films: 0, studio: 'Satelight', category: 'Retro' },
-      { title: 'Shakugan no Shana', ep: 72, saison: 3, films: 0, studio: 'J.C.Staff', category: 'Retro' },
-      { title: 'Zero no Tsukaima', ep: 49, saison: 4, films: 0, studio: 'J.C.Staff', category: 'Retro' },
-      { title: 'Romeo x Juliet', ep: 24, saison: 1, films: 0, studio: 'Gonzo', category: 'Retro' },
-      { title: 'Higurashi no Naku Koro ni', ep: 50, saison: 2, films: 0, studio: 'Deen', category: 'Retro' },
-      { title: 'Umineko no Naku Koro ni', ep: 26, saison: 1, films: 0, studio: 'Deen', category: 'Retro' },
-      { title: 'Initial D', ep: 100, saison: 1, films: 1, studio: 'Gallop / A.C.G.T', category: 'Retro' },
-      { title: 'Hajime no Ippo', ep: 75, saison: 1, films: 0, studio: 'Madhouse', category: 'Retro' },
-      { title: 'Mobile Suit Gundam SEED', ep: 50, saison: 1, films: 0, studio: 'Sunrise', category: 'Retro' },
-      { title: 'Mobile Suit Gundam SEED Destiny', ep: 50, saison: 1, films: 0, studio: 'Sunrise', category: 'Retro' },
-      { title: 'Macross Frontier', ep: 25, saison: 1, films: 2, studio: 'Satelight', category: 'Retro' },
-      { title: 'Tenjou Tenge', ep: 24, saison: 1, films: 0, studio: 'Madhouse', category: 'Retro' },
-      { title: 'Bubblegum Crisis', ep: 8, saison: 0, films: 0, studio: 'AIC', category: 'Retro' },
-      { title: 'Area 88', ep: 3, saison: 0, films: 0, studio: 'Studio Pierrot', category: 'Retro' },
-      { title: 'Dirty Pair: Project Eden', ep: 0, saison: 0, films: 1, studio: 'Sunrise', category: 'Retro' },
-      { title: 'Vampire Hunter D', ep: 0, saison: 0, films: 1, studio: 'Ashi Productions', category: 'Retro' },
-      { title: 'Wicked City', ep: 0, saison: 0, films: 1, studio: 'Madhouse', category: 'Retro' },
-      { title: 'Genma Taisen', ep: 0, saison: 0, films: 1, studio: 'Madhouse', category: 'Retro' },
-      { title: 'Golgo 13: The Professional', ep: 0, saison: 0, films: 1, studio: 'Toei Animation', category: 'Retro' },
-      { title: 'Windaria', ep: 0, saison: 0, films: 1, studio: 'Kaname Production', category: 'Retro' },
-      { title: 'Robot Carnival', ep: 0, saison: 0, films: 1, studio: 'AIC', category: 'Retro' },
-      { title: 'Legend of the Galactic Heroes', ep: 110, saison: 1, films: 0, studio: 'Artland / Magic Bus', category: 'Retro' },
-      
-      // Slice of Life
-      { title: 'Anohana: The Flower We Saw That Day', ep: 11, saison: 1, films: 0, studio: 'A-1 Pictures', category: 'Slice of Life' },
-      { title: 'A Place Further Than the Universe', ep: 13, saison: 1, films: 0, studio: 'Madhouse', category: 'Slice of Life' },
-      { title: 'Nichijou', ep: 26, saison: 1, films: 0, studio: 'Kyoto Animation', category: 'Slice of Life' },
-      { title: 'Daily Lives of High School Boys', ep: 12, saison: 1, films: 0, studio: 'Sunrise', category: 'Slice of Life' },
-      { title: 'Saiki Kusuo no Psi-nan', ep: 120, saison: 3, films: 0, studio: 'J.C.Staff / EGG Firm', category: 'Slice of Life' },
-      { title: 'New Game!', ep: 24, saison: 2, films: 0, studio: 'Doga Kobo', category: 'Slice of Life' },
-      { title: 'The Great Passage', ep: 11, saison: 1, films: 0, studio: 'Zexcs', category: 'Slice of Life' },
-      { title: 'Deaimon', ep: 12, saison: 1, films: 0, studio: 'Encourage Films', category: 'Slice of Life' },
-      { title: 'Interviews with Monster Girls', ep: 13, saison: 1, films: 0, studio: 'A-1 Pictures', category: 'Slice of Life' },
-      { title: 'Mitsuboshi Colors', ep: 12, saison: 1, films: 0, studio: 'Silver Link', category: 'Slice of Life' },
-      { title: 'Sweet Blue Flowers', ep: 11, saison: 1, films: 0, studio: 'J.C.Staff', category: 'Slice of Life' },
-      { title: 'Hanasaku Iroha', ep: 26, saison: 1, films: 0, studio: 'P.A.Works', category: 'Slice of Life' },
-      { title: 'Shirobako', ep: 24, saison: 1, films: 0, studio: 'P.A.Works', category: 'Slice of Life' },
-      { title: 'Sakura Quest', ep: 25, saison: 1, films: 0, studio: 'P.A.Works', category: 'Slice of Life' },
-      { title: 'Bokura wa Minna Kawai-sou', ep: 12, saison: 1, films: 0, studio: 'Brain\'s Base', category: 'Slice of Life' },
-      { title: 'The Pet Girl of Sakurasou', ep: 24, saison: 1, films: 0, studio: 'J.C.Staff', category: 'Slice of Life' },
-      { title: 'Love, Chunibyo & Other Delusions', ep: 24, saison: 2, films: 1, studio: 'Kyoto Animation', category: 'Slice of Life' },
-      { title: 'Barakamon', ep: 12, saison: 1, films: 0, studio: 'Kinema Citrus', category: 'Slice of Life' },
-      { title: 'Wagnaria!! (Working!!)', ep: 39, saison: 3, films: 0, studio: 'A-1 Pictures', category: 'Slice of Life' },
-      { title: 'Gabriel DropOut', ep: 12, saison: 1, films: 0, studio: 'Doga Kobo', category: 'Slice of Life' },
-      { title: 'Tonari no Seki-kun', ep: 21, saison: 1, films: 0, studio: 'Shin-Ei Animation', category: 'Slice of Life' },
-      { title: 'Azumanga Daioh', ep: 26, saison: 1, films: 0, studio: 'J.C.Staff', category: 'Slice of Life' },
-      { title: 'Heidi, Girl of the Alps', ep: 52, saison: 1, films: 0, studio: 'Zuiyo Eizo', category: 'Slice of Life' },
-      { title: 'Doraemon', ep: 1000, saison: 1, films: 0, studio: 'Shin-Ei Animation', category: 'Slice of Life' },
-      { title: 'Crayon Shin-chan', ep: 1000, saison: 1, films: 0, studio: 'Shin-Ei Animation', category: 'Slice of Life' },
-      { title: 'Chi\'s Sweet Home', ep: 104, saison: 2, films: 0, studio: 'Madhouse', category: 'Slice of Life' },
-      
-      // Ecchi
-      { title: 'Keijo!!!!!!!!', ep: 12, saison: 1, films: 0, studio: 'Xebec', category: 'Ecchi' },
-      { title: 'High School DxD', ep: 49, saison: 4, films: 0, studio: 'TNK / Passione', category: 'Ecchi' },
-      { title: 'To Love-Ru', ep: 64, saison: 4, films: 0, studio: 'Xebec', category: 'Ecchi' },
-      { title: 'To Love-Ru Darkness', ep: 24, saison: 2, films: 0, studio: 'Xebec', category: 'Ecchi' },
-      { title: 'Date A Live', ep: 50, saison: 5, films: 0, studio: 'AIC / J.C.Staff', category: 'Ecchi' },
-      { title: 'Monster Musume', ep: 12, saison: 1, films: 0, studio: 'Lerche', category: 'Ecchi' },
-      { title: 'Shinmai Maou no Testament', ep: 22, saison: 2, films: 0, studio: 'Production IMS', category: 'Ecchi' },
-      { title: 'Sekirei', ep: 25, saison: 2, films: 0, studio: 'Seven Arcs', category: 'Ecchi' },
-      { title: 'Heaven\'s Lost Property', ep: 26, saison: 2, films: 2, studio: 'AIC', category: 'Ecchi' },
-      { title: 'Kanokon', ep: 12, saison: 1, films: 0, studio: 'Xebec', category: 'Ecchi' },
-      { title: 'Kiss x Sis', ep: 12, saison: 1, films: 0, studio: 'Feel', category: 'Ecchi' },
-      { title: 'Dakara Boku wa, H ga Dekinai', ep: 12, saison: 1, films: 0, studio: 'Feel', category: 'Ecchi' },
-      { title: 'Ikkitousen', ep: 50, saison: 4, films: 0, studio: 'Arms', category: 'Ecchi' },
-      { title: 'Samurai Girls (Hyakka Ryouran)', ep: 24, saison: 2, films: 0, studio: 'Arms', category: 'Ecchi' },
-      { title: 'Queen\'s Blade', ep: 24, saison: 2, films: 0, studio: 'ARMS', category: 'Ecchi' },
-      { title: 'Freezing', ep: 24, saison: 2, films: 0, studio: 'A.C.G.T', category: 'Ecchi' },
-      { title: 'Infinite Stratos', ep: 24, saison: 2, films: 0, studio: '8bit', category: 'Ecchi' },
-      { title: 'The Testament of Sister New Devil', ep: 22, saison: 2, films: 0, studio: 'Production IMS', category: 'Ecchi' },
-      { title: 'Aesthetica of a Rogue Hero', ep: 12, saison: 1, films: 0, studio: 'Arms', category: 'Ecchi' },
-      { title: 'Trinity Seven', ep: 24, saison: 1, films: 1, studio: 'Seven Arcs', category: 'Ecchi' },
-      { title: 'Sekirei Pure Engagement', ep: 13, saison: 1, films: 0, studio: 'Seven Arcs', category: 'Ecchi' },
-      { title: 'Yosuga no Sora', ep: 12, saison: 1, films: 0, studio: 'Feel', category: 'Ecchi' },
-      { title: 'B Gata H Kei', ep: 12, saison: 1, films: 0, studio: 'Hal Film Maker', category: 'Ecchi' },
-      { title: 'Haganai (Boku wa Tomodachi ga Sukunai)', ep: 24, saison: 2, films: 0, studio: 'AIC', category: 'Ecchi' },
-      { title: 'The Quintessential Quintuplets', ep: 24, saison: 2, films: 1, studio: 'Tezuka Productions / Bibury', category: 'Ecchi' },
-      { title: 'Saekano', ep: 24, saison: 2, films: 1, studio: 'A-1 Pictures', category: 'Ecchi' },
-      { title: 'Golden Boy', ep: 6, saison: 0, films: 0, studio: 'APPP', category: 'Ecchi' },
-      { title: 'Shimoneta', ep: 12, saison: 1, films: 0, studio: 'J.C.Staff', category: 'Ecchi' },
-      { title: 'Kill la Kill', ep: 24, saison: 1, films: 0, studio: 'Trigger', category: 'Ecchi' },
-      { title: 'Darling in the Franxx', ep: 24, saison: 1, films: 0, studio: 'Trigger / A-1 Pictures', category: 'Ecchi' },
-      { title: 'Highschool of the Dead', ep: 12, saison: 1, films: 0, studio: 'Madhouse', category: 'Ecchi' },
-      { title: 'Campione!', ep: 13, saison: 1, films: 0, studio: 'Diomeda', category: 'Ecchi' },
-      { title: 'Strike the Blood', ep: 50, saison: 4, films: 0, studio: 'Silver Link', category: 'Ecchi' },
-      { title: 'Demon King Daimao', ep: 12, saison: 1, films: 0, studio: 'Artland', category: 'Ecchi' },
-      { title: 'Hagure Yuusha no Estetica', ep: 12, saison: 1, films: 0, studio: 'Arms', category: 'Ecchi' },
-      { title: 'Toji no Miko', ep: 24, saison: 1, films: 0, studio: 'Gokumi', category: 'Ecchi' },
-      { title: 'Masou Gakuen HxH', ep: 12, saison: 1, films: 0, studio: 'Production IMS', category: 'Ecchi' },
-      { title: 'Peter Grill and the Philosopher\'s Time', ep: 24, saison: 2, films: 0, studio: 'Wolfsbane', category: 'Ecchi' },
-      { title: 'Redo of Healer', ep: 12, saison: 1, films: 0, studio: 'TNK', category: 'Ecchi' },
-      { title: 'Val x Love', ep: 12, saison: 1, films: 0, studio: 'Hoods Entertainment', category: 'Ecchi' },
-      { title: 'Love-Ru Darkness 2nd', ep: 14, saison: 1, films: 0, studio: 'Xebec', category: 'Ecchi' },
-      { title: 'Medaka Box', ep: 24, saison: 2, films: 0, studio: 'Gainax / Shaft', category: 'Ecchi' },
-      { title: 'Eromanga Sensei', ep: 12, saison: 1, films: 0, studio: 'A-1 Pictures', category: 'Ecchi' },
-      
-      // Sport
-      { title: 'Kuroko no Basket', ep: 75, saison: 3, films: 3, studio: 'Production I.G', category: 'Sport' },
-      { title: 'Captain Tsubasa', ep: 150, saison: 1, films: 0, studio: 'Tsuchida Production / David Production', category: 'Sport' },
-      { title: 'Megalo Box', ep: 26, saison: 2, films: 0, studio: 'TMS Entertainment', category: 'Sport' },
-      { title: 'Yuri on Ice', ep: 12, saison: 1, films: 0, studio: 'MAPPA', category: 'Sport' },
-      { title: 'Free!', ep: 36, saison: 3, films: 1, studio: 'Kyoto Animation', category: 'Sport' },
-      { title: 'Slam Dunk', ep: 101, saison: 1, films: 4, studio: 'Toei Animation', category: 'Sport' },
-      { title: 'Eyeshield 21', ep: 145, saison: 1, films: 0, studio: 'Gallop', category: 'Sport' },
-      { title: 'Prince of Tennis', ep: 178, saison: 1, films: 0, studio: 'Trans Arts / Production I.G', category: 'Sport' },
-      { title: 'Major', ep: 154, saison: 6, films: 0, studio: 'Studio Hibari', category: 'Sport' },
-      { title: 'Diamond no Ace', ep: 75, saison: 3, films: 0, studio: 'Madhouse', category: 'Sport' },
-      { title: 'Ao Ashi', ep: 24, saison: 1, films: 0, studio: 'Production I.G', category: 'Sport' },
-      { title: 'Inazuma Eleven', ep: 127, saison: 1, films: 3, studio: 'OLM', category: 'Sport' },
-      { title: 'Captain Tsubasa (2018)', ep: 52, saison: 2, films: 0, studio: 'David Production', category: 'Sport' },
-      { title: 'Hajime no Ippo: New Challenger', ep: 26, saison: 1, films: 0, studio: 'Madhouse', category: 'Sport' },
-      { title: 'Hajime no Ippo: Rising', ep: 25, saison: 1, films: 0, studio: 'Madhouse', category: 'Sport' },
-      { title: 'Run with the Wind', ep: 23, saison: 1, films: 0, studio: 'Production I.G', category: 'Sport' },
-      { title: 'Ahiru no Sora', ep: 50, saison: 1, films: 0, studio: 'Diomeda', category: 'Sport' },
-      { title: 'Bakuten!!', ep: 12, saison: 1, films: 0, studio: 'Zexcs', category: 'Sport' },
-      { title: 'Yowamushi Pedal', ep: 100, saison: 1, films: 0, studio: 'TMS Entertainment', category: 'Sport' },
-      { title: 'Over Drive', ep: 26, saison: 1, films: 0, studio: 'Xebec', category: 'Sport' },
-      { title: 'Baby Steps', ep: 50, saison: 2, films: 0, studio: 'Pierrot', category: 'Sport' },
-      { title: 'Birdie Wing', ep: 24, saison: 2, films: 0, studio: 'Bandai Namco Pictures', category: 'Sport' },
-      { title: 'Giant Killing', ep: 26, saison: 1, films: 0, studio: 'Studio Deen', category: 'Sport' },
-      { title: 'Tsurune', ep: 13, saison: 1, films: 1, studio: 'Kyoto Animation', category: 'Sport' },
-      { title: 'Free! Dive to the Future', ep: 12, saison: 1, films: 0, studio: 'Kyoto Animation', category: 'Sport' },
-      { title: 'Ace of Diamond Act II', ep: 52, saison: 1, films: 0, studio: 'Madhouse', category: 'Sport' },
-      { title: 'Gurazeni', ep: 24, saison: 2, films: 0, studio: 'Studio Deen', category: 'Sport' },
-      { title: 'Burning Kabaddi', ep: 12, saison: 1, films: 0, studio: 'TMS Entertainment', category: 'Sport' }
+      { title: 'Mob Psycho 100', ep: 37, saison: 3, films: 0, studio: 'Bones', category: 'Random' }
     ];
     
     return allAnimes.map((a, i) => ({
@@ -4586,487 +4338,6 @@
       isPredefined: true,
       isNewlyAdded: false,
       isAdminAdded: false
-    }));
-  }
-
-  function buildInitialMovies() {
-    const moviesData = [
-      { title: 'Jujutsu Kaisen 0', parts: 1, studio: 'MAPPA', releaseDate: '2021-12-24' },
-      { title: 'Your Name', parts: 1, studio: 'CoMix Wave Films', releaseDate: '2016-08-26' },
-      { title: 'A Silent Voice', parts: 1, studio: 'Kyoto Animation', releaseDate: '2016-09-17' },
-      { title: 'Weathering with You', parts: 1, studio: 'CoMix Wave Films', releaseDate: '2019-07-19' },
-      { title: 'Suzume', parts: 1, studio: 'CoMix Wave Films', releaseDate: '2022-11-11' },
-      { title: 'The Garden of Words', parts: 1, studio: 'CoMix Wave Films', releaseDate: '2013-05-31' },
-      { title: '5 Centimeters per Second', parts: 1, studio: 'CoMix Wave Films', releaseDate: '2007-03-03' },
-      { title: 'The Place Promised in Our Early Days', parts: 1, studio: 'CoMix Wave Films', releaseDate: '2004-11-20' },
-      { title: 'Children Who Chase Lost Voices', parts: 1, studio: 'CoMix Wave Films', releaseDate: '2011-05-07' },
-      { title: 'Demon Slayer: Le Train de l\'Infini', parts: 1, studio: 'ufotable', releaseDate: '2020-10-16' },
-      { title: 'Demon Slayer: La Forteresse Infinie', parts: 3, studio: 'ufotable', releaseDate: '2025-02-14' },
-      { title: 'My Hero Academia: Two Heroes', parts: 4, studio: 'Bones', releaseDate: '2018-08-03' },
-      { title: 'My Hero Academia: Heroes Rising', parts: 4, studio: 'Bones', releaseDate: '2019-12-20' },
-      { title: 'My Hero Academia: World Heroes\' Mission', parts: 4, studio: 'Bones', releaseDate: '2021-08-06' },
-      { title: 'My Hero Academia: You\'re Next', parts: 4, studio: 'Bones', releaseDate: '2024-08-02' },
-      { title: 'Dragon Ball Super: Broly', parts: 2, studio: 'Toei Animation', releaseDate: '2018-12-14' },
-      { title: 'Dragon Ball Super: Super Hero', parts: 2, studio: 'Toei Animation', releaseDate: '2022-06-11' },
-      { title: 'Dragon Ball Z: Battle of Gods', parts: 2, studio: 'Toei Animation', releaseDate: '2013-03-30' },
-      { title: 'Dragon Ball Z: Resurrection \'F\'', parts: 2, studio: 'Toei Animation', releaseDate: '2015-04-18' },
-      { title: 'One Piece Film: Red', parts: 5, studio: 'Toei Animation', releaseDate: '2022-08-06' },
-      { title: 'One Piece: Stampede', parts: 5, studio: 'Toei Animation', releaseDate: '2019-08-09' },
-      { title: 'One Piece Film: Gold', parts: 5, studio: 'Toei Animation', releaseDate: '2016-07-23' },
-      { title: 'One Piece Film: Z', parts: 5, studio: 'Toei Animation', releaseDate: '2012-12-15' },
-      { title: 'One Piece Film: Strong World', parts: 5, studio: 'Toei Animation', releaseDate: '2009-12-12' },
-      { title: 'Naruto the Movie: Ninja Clash in the Land of Snow', parts: 9, studio: 'Pierrot', releaseDate: '2004-08-21' },
-      { title: 'Naruto Shippuden the Movie', parts: 9, studio: 'Pierrot', releaseDate: '2007-08-04' },
-      { title: 'Naruto Shippuden the Movie: Bonds', parts: 9, studio: 'Pierrot', releaseDate: '2008-08-02' },
-      { title: 'Naruto Shippuden the Movie: The Will of Fire', parts: 9, studio: 'Pierrot', releaseDate: '2009-08-01' },
-      { title: 'Naruto Shippuden the Movie: The Lost Tower', parts: 9, studio: 'Pierrot', releaseDate: '2010-07-31' },
-      { title: 'Naruto Shippuden the Movie: Blood Prison', parts: 9, studio: 'Pierrot', releaseDate: '2011-07-30' },
-      { title: 'Road to Ninja: Naruto the Movie', parts: 9, studio: 'Pierrot', releaseDate: '2012-07-28' },
-      { title: 'The Last: Naruto the Movie', parts: 9, studio: 'Pierrot', releaseDate: '2014-12-06' },
-      { title: 'Boruto: Naruto the Movie', parts: 9, studio: 'Pierrot', releaseDate: '2015-08-07' },
-      { title: 'Bleach: Memories of Nobody', parts: 4, studio: 'Pierrot', releaseDate: '2006-12-16' },
-      { title: 'Bleach: The DiamondDust Rebellion', parts: 4, studio: 'Pierrot', releaseDate: '2007-12-22' },
-      { title: 'Bleach: Fade to Black', parts: 4, studio: 'Pierrot', releaseDate: '2008-12-13' },
-      { title: 'Bleach: Hell Verse', parts: 4, studio: 'Pierrot', releaseDate: '2010-12-04' },
-      { title: 'Chainsaw Man - The Movie: Reze Arc', parts: 1, studio: 'MAPPA', releaseDate: '2025-03-15' },
-      { title: 'Spy × Family Code: White', parts: 1, studio: 'Wit Studio / CloverWorks', releaseDate: '2023-12-22' },
-      { title: 'Blue Lock: Episode Nagi', parts: 1, studio: 'Eight Bit', releaseDate: '2024-04-19' },
-      { title: 'Haikyu!! The Dumpster Battle', parts: 2, studio: 'Production I.G', releaseDate: '2024-02-16' },
-      { title: 'Attack on Titan: The Last Attack', parts: 1, studio: 'MAPPA', releaseDate: '2024-11-08' },
-      { title: 'Black Clover: Sword of the Wizard King', parts: 1, studio: 'Pierrot', releaseDate: '2023-06-16' },
-      { title: 'Hunter × Hunter: Phantom Rouge', parts: 2, studio: 'Madhouse', releaseDate: '2013-01-12' },
-      { title: 'Hunter × Hunter: The Last Mission', parts: 2, studio: 'Madhouse', releaseDate: '2013-12-27' },
-      { title: 'Sword Art Online the Movie: Ordinal Scale', parts: 1, studio: 'A-1 Pictures', releaseDate: '2017-02-18' },
-      { title: 'Sword Art Online Progressive: Aria of a Starless Night', parts: 2, studio: 'A-1 Pictures', releaseDate: '2021-10-30' },
-      { title: 'Sword Art Online Progressive: Scherzo of Deep Night', parts: 2, studio: 'A-1 Pictures', releaseDate: '2022-10-22' },
-      { title: 'Fate/stay night: Heaven\'s Feel I - Presage Flower', parts: 3, studio: 'ufotable', releaseDate: '2017-10-14' },
-      { title: 'Fate/stay night: Heaven\'s Feel II - Lost Butterfly', parts: 3, studio: 'ufotable', releaseDate: '2019-01-12' },
-      { title: 'Fate/stay night: Heaven\'s Feel III - Spring Song', parts: 3, studio: 'ufotable', releaseDate: '2020-08-15' },
-      { title: 'Fate/Grand Order: Camelot - Wandering; Agateram', parts: 2, studio: 'Signal.MD', releaseDate: '2020-12-05' },
-      { title: 'Fate/Grand Order: Camelot - Paladin; Agateram', parts: 2, studio: 'Production I.G', releaseDate: '2021-05-15' },
-      { title: 'Kizumonogatari I: Tekketsu', parts: 3, studio: 'Shaft', releaseDate: '2016-01-08' },
-      { title: 'Kizumonogatari II: Nekketsu', parts: 3, studio: 'Shaft', releaseDate: '2016-08-19' },
-      { title: 'Kizumonogatari III: Reiketsu', parts: 3, studio: 'Shaft', releaseDate: '2017-01-06' },
-      { title: 'Puella Magi Madoka Magica: Beginnings', parts: 3, studio: 'Shaft', releaseDate: '2012-10-06' },
-      { title: 'Puella Magi Madoka Magica: Eternal', parts: 3, studio: 'Shaft', releaseDate: '2012-10-13' },
-      { title: 'Puella Magi Madoka Magica: Rebellion', parts: 3, studio: 'Shaft', releaseDate: '2013-10-26' },
-      { title: 'Made in Abyss: Dawn of the Deep Soul', parts: 1, studio: 'Kinema Citrus', releaseDate: '2020-01-17' },
-      { title: 'Rascal Does Not Dream of a Dreaming Girl', parts: 3, studio: 'CloverWorks', releaseDate: '2019-06-15' },
-      { title: 'Rascal Does Not Dream of a Sister Venturing Out', parts: 3, studio: 'CloverWorks', releaseDate: '2023-06-23' },
-      { title: 'Rascal Does Not Dream of a Knapsack Kid', parts: 3, studio: 'CloverWorks', releaseDate: '2023-12-01' },
-      { title: 'Violet Evergarden: Eternity and the Auto Memory Doll', parts: 2, studio: 'Kyoto Animation', releaseDate: '2019-09-06' },
-      { title: 'Violet Evergarden: The Movie', parts: 2, studio: 'Kyoto Animation', releaseDate: '2020-09-18' },
-      { title: 'The Quintessential Quintuplets Movie', parts: 1, studio: 'Bibury Animation Studios', releaseDate: '2022-05-20' },
-      { title: 'Kaguya-sama: Love Is War - The First Kiss That Never Ends', parts: 1, studio: 'A-1 Pictures', releaseDate: '2022-12-17' },
-      { title: 'Given the Movie', parts: 3, studio: 'Lerche', releaseDate: '2020-08-22' },
-      { title: 'Given Movie: Hiiragi Mix', parts: 3, studio: 'Lerche', releaseDate: '2024-01-27' },
-      { title: 'Given Movie: To the Sea', parts: 3, studio: 'Lerche', releaseDate: '2024-09-20' },
-      { title: 'Josee, the Tiger and the Fish', parts: 1, studio: 'Bones', releaseDate: '2020-10-30' },
-      { title: 'I Want to Eat Your Pancreas', parts: 1, studio: 'Studio VOLN', releaseDate: '2018-09-01' },
-      { title: 'The Tunnel to Summer, the Exit of Goodbyes', parts: 1, studio: 'CLAP', releaseDate: '2022-09-09' },
-      { title: 'The Anthem of the Heart', parts: 1, studio: 'A-1 Pictures', releaseDate: '2015-09-19' },
-      { title: 'Her Blue Sky', parts: 1, studio: 'CloverWorks', releaseDate: '2019-10-11' },
-      { title: 'Ride Your Wave', parts: 1, studio: 'Science SARU', releaseDate: '2019-06-21' },
-      { title: 'Bubble', parts: 1, studio: 'Wit Studio', releaseDate: '2022-05-13' },
-      { title: 'Drifting Home', parts: 1, studio: 'Studio Colorido', releaseDate: '2022-09-16' },
-      { title: 'Penguin Highway', parts: 1, studio: 'Studio Colorido', releaseDate: '2018-08-17' },
-      { title: 'A Whisker Away', parts: 1, studio: 'Studio Colorido', releaseDate: '2020-06-18' },
-      { title: 'The Imaginary', parts: 1, studio: 'Studio Ponoc', releaseDate: '2023-12-15' },
-      { title: 'Mary and the Witch\'s Flower', parts: 1, studio: 'Studio Ponoc', releaseDate: '2017-07-08' },
-      { title: 'Spirited Away', parts: 1, studio: 'Studio Ghibli', releaseDate: '2001-07-20' },
-      { title: 'Princess Mononoke', parts: 1, studio: 'Studio Ghibli', releaseDate: '1997-07-12' },
-      { title: 'Howl\'s Moving Castle', parts: 1, studio: 'Studio Ghibli', releaseDate: '2004-11-20' },
-      { title: 'My Neighbor Totoro', parts: 1, studio: 'Studio Ghibli', releaseDate: '1988-04-16' },
-      { title: 'Kiki\'s Delivery Service', parts: 1, studio: 'Studio Ghibli', releaseDate: '1989-07-29' },
-      { title: 'Castle in the Sky', parts: 1, studio: 'Studio Ghibli', releaseDate: '1986-08-02' },
-      { title: 'Porco Rosso', parts: 1, studio: 'Studio Ghibli', releaseDate: '1992-07-18' },
-      { title: 'The Wind Rises', parts: 1, studio: 'Studio Ghibli', releaseDate: '2013-07-20' },
-      { title: 'The Boy and the Heron', parts: 1, studio: 'Studio Ghibli', releaseDate: '2023-07-14' },
-      { title: 'Grave of the Fireflies', parts: 1, studio: 'Studio Ghibli', releaseDate: '1988-04-16' },
-      { title: 'Nausicaä of the Valley of the Wind', parts: 1, studio: 'Topcraft', releaseDate: '1984-03-11' },
-      { title: 'Akira', parts: 1, studio: 'Tokyo Movie Shinsha', releaseDate: '1988-07-16' },
-      { title: 'Ghost in the Shell', parts: 1, studio: 'Production I.G', releaseDate: '1995-11-18' },
-      { title: 'Perfect Blue', parts: 1, studio: 'Madhouse', releaseDate: '1997-08-05' },
-      { title: 'Paprika', parts: 1, studio: 'Madhouse', releaseDate: '2006-11-25' },
-      { title: 'Wolf Children', parts: 1, studio: 'Studio Chizu', releaseDate: '2012-07-21' },
-      { title: 'Belle', parts: 1, studio: 'Studio Chizu', releaseDate: '2021-07-16' },
-      { title: 'Summer Wars', parts: 1, studio: 'Madhouse', releaseDate: '2009-08-01' },
-      { title: 'The Girl Who Leapt Through Time', parts: 1, studio: 'Madhouse', releaseDate: '2006' },
-      { title: 'Millennium Actress', parts: 1, studio: 'Madhouse', releaseDate: '2001' },
-      { title: 'Tokyo Godfathers', parts: 1, studio: 'Madhouse', releaseDate: '2003' },
-      { title: 'Mind Game', parts: 1, studio: 'Studio 4°C', releaseDate: '2004' },
-      { title: 'Tekkonkinkreet', parts: 1, studio: 'Studio 4°C', releaseDate: '2006' },
-      { title: 'Children of the Sea', parts: 1, studio: 'Studio 4°C', releaseDate: '2019' },
-      { title: 'Harmony', parts: 1, studio: 'Studio 4°C', releaseDate: '2015' },
-      { title: 'Genius Party', parts: 2, studio: 'Studio 4°C', releaseDate: '2007' },
-      { title: 'Genius Party Beyond', parts: 2, studio: 'Studio 4°C', releaseDate: '2008' },
-      { title: 'Memories', parts: 1, studio: 'Studio 4°C / Madhouse', releaseDate: '1995' },
-      { title: 'Patema Inverted', parts: 1, studio: 'Purple Cow Studio', releaseDate: '2013' },
-      { title: 'HAL', parts: 1, studio: 'Wit Studio', releaseDate: '2013' },
-      { title: 'Colorful', parts: 1, studio: 'Sunrise', releaseDate: '2010' },
-      { title: 'Sing a Bit of Harmony', parts: 1, studio: 'J.C.Staff', releaseDate: '2021' },
-      { title: 'Hello World', parts: 1, studio: 'Graphinica', releaseDate: '2019' },
-      { title: 'Lonely Castle in the Mirror', parts: 1, studio: 'A-1 Pictures', releaseDate: '2022' },
-      { title: 'Words Bubble Up Like Soda Pop', parts: 1, studio: 'Signal.MD', releaseDate: '2020' },
-      { title: 'Fireworks', parts: 1, studio: 'Shaft', releaseDate: '2017' },
-      { title: 'Giovanni\'s Island', parts: 1, studio: 'Production I.G', releaseDate: '2014' },
-      { title: 'Okko\'s Inn', parts: 1, studio: 'Madhouse', releaseDate: '2018' },
-      { title: 'Miss Hokusai', parts: 1, studio: 'Production I.G', releaseDate: '2015' },
-      { title: 'The Deer King', parts: 1, studio: 'Production I.G', releaseDate: '2021' },
-      { title: 'Fortune Favors Lady Nikuko', parts: 1, studio: 'Studio 4°C', releaseDate: '2021' },
-      { title: 'Blue Giant', parts: 1, studio: 'NUT', releaseDate: '2023' },
-      { title: 'Pompo: The Cinéphile', parts: 1, studio: 'CLAP', releaseDate: '2021' },
-      { title: 'On-Gaku: Our Sound', parts: 1, studio: 'Rock\'n Roll Mountain', releaseDate: '2019' },
-      { title: 'The House of the Lost on the Cape', parts: 1, studio: 'David Production', releaseDate: '2021' },
-      { title: 'Maquia: When the Promised Flower Blooms', parts: 1, studio: 'P.A.Works', releaseDate: '2018' },
-      { title: 'Expelled from Paradise', parts: 1, studio: 'Toei Animation', releaseDate: '2014' },
-      { title: 'Princess Arete', parts: 1, studio: 'Studio 4°C', releaseDate: '2001' },
-      { title: 'Brave Story', parts: 1, studio: 'Gonzo', releaseDate: '2006' },
-      { title: 'Welcome to the Space Show', parts: 1, studio: 'A-1 Pictures', releaseDate: '2010' },
-      { title: 'Origin: Spirits of the Past', parts: 1, studio: 'Gonzo', releaseDate: '2006' },
-      { title: 'The Princess and the Pilot', parts: 1, studio: 'Madhouse', releaseDate: '2011' },
-      { title: 'The Relative Worlds', parts: 1, studio: 'Craftar Studios', releaseDate: '2019' },
-      { title: 'Napping Princess', parts: 1, studio: 'Signal.MD', releaseDate: '2017' },
-      { title: 'Summer Ghost', parts: 1, studio: 'Flat Studio', releaseDate: '2021' },
-      { title: 'The Wonderland', parts: 1, studio: 'Signal.MD', releaseDate: '2019' },
-      { title: 'The First Slam Dunk', parts: 1, studio: 'Toei Animation', releaseDate: '2022' },
-      { title: 'Slam Dunk Movie 1', parts: 4, studio: 'Toei Animation', releaseDate: '1994' },
-      { title: 'Slam Dunk Movie 2', parts: 4, studio: 'Toei Animation', releaseDate: '1994' },
-      { title: 'Slam Dunk Movie 3', parts: 4, studio: 'Toei Animation', releaseDate: '1995' },
-      { title: 'Slam Dunk Movie 4', parts: 4, studio: 'Toei Animation', releaseDate: '1995' },
-      { title: 'Initial D Third Stage', parts: 1, studio: 'Studio Deen', releaseDate: '2001' },
-      { title: 'Initial D Legend 1: Awakening', parts: 3, studio: 'Liden Films / Sanzigen', releaseDate: '2014' },
-      { title: 'Initial D Legend 2: Racer', parts: 3, studio: 'Liden Films / Sanzigen', releaseDate: '2015' },
-      { title: 'Initial D Legend 3: Dream', parts: 3, studio: 'Liden Films / Sanzigen', releaseDate: '2016' },
-      { title: 'Overlord: The Undead King', parts: 2, studio: 'Madhouse', releaseDate: '2017' },
-      { title: 'Overlord: The Dark Hero', parts: 2, studio: 'Madhouse', releaseDate: '2017' },
-      { title: 'Overlord: The Sacred Kingdom', parts: 1, studio: 'Madhouse', releaseDate: '2024' },
-      { title: 'No Game No Life: Zero', parts: 1, studio: 'Madhouse', releaseDate: '2017' },
-      { title: 'Konosuba: Legend of Crimson', parts: 1, studio: 'J.C.Staff', releaseDate: '2019' },
-      { title: 'Goblin Slayer: Goblin\'s Crown', parts: 1, studio: 'White Fox', releaseDate: '2020' },
-      { title: 'Bungou Stray Dogs: Dead Apple', parts: 1, studio: 'Bones', releaseDate: '2018' },
-      { title: 'Black Fox', parts: 1, studio: 'Studio 3Hz', releaseDate: '2019' },
-      { title: 'Promare', parts: 1, studio: 'Trigger', releaseDate: '2019' },
-      { title: 'Gridman Universe', parts: 1, studio: 'Trigger', releaseDate: '2023' },
-      { title: 'Trapezium', parts: 1, studio: 'CloverWorks', releaseDate: '2024' },
-      { title: 'Look Back', parts: 1, studio: 'Studio Durian', releaseDate: '2024' },
-      { title: 'The Colors Within', parts: 1, studio: 'Science SARU', releaseDate: '2024' },
-      { title: 'Maboroshi', parts: 1, studio: 'MAPPA', releaseDate: '2023' },
-      { title: 'Komada: A Whisky Family', parts: 1, studio: 'P.A.Works', releaseDate: '2023' },
-      { title: 'The Concierge', parts: 1, studio: 'Production I.G', releaseDate: '2023' },
-      { title: 'Blue Thermal', parts: 1, studio: 'Telecom Animation Film', releaseDate: '2022' },
-      { title: 'Goodbye, Don Glees!', parts: 1, studio: 'Madhouse', releaseDate: '2022' },
-      { title: 'Deemo: Memorial Keys', parts: 1, studio: 'Signal.MD', releaseDate: '2022' },
-      { title: 'My Oni Girl', parts: 1, studio: 'Studio Colorido', releaseDate: '2024' },
-      { title: 'Totto-chan: The Little Girl at the Window', parts: 1, studio: 'Shin-Ei Animation', releaseDate: '2023' },
-      { title: 'Gold Kingdom and Water Kingdom', parts: 1, studio: 'Madhouse', releaseDate: '2023' },
-      { title: 'Detective Conan: Captured in Her Eyes', parts: 28, studio: 'TMS Entertainment', releaseDate: '2000' },
-      { title: 'Detective Conan: Crossroad in the Ancient Capital', parts: 28, studio: 'TMS Entertainment', releaseDate: '2003' },
-      { title: 'Detective Conan: Strategy Above the Depths', parts: 28, studio: 'TMS Entertainment', releaseDate: '2005' },
-      { title: 'Detective Conan: Jolly Roger in the Deep Azure', parts: 28, studio: 'TMS Entertainment', releaseDate: '2007' },
-      { title: 'Detective Conan: The Scarlet Bullet', parts: 28, studio: 'TMS Entertainment', releaseDate: '2021' },
-      { title: 'Pokémon: Destiny Deoxys', parts: 23, studio: 'OLM', releaseDate: '2004' },
-      { title: 'Pokémon: Lucario and the Mystery of Mew', parts: 23, studio: 'OLM', releaseDate: '2005' },
-      { title: 'Pokémon Ranger and the Temple of the Sea', parts: 23, studio: 'OLM', releaseDate: '2006' },
-      { title: 'Pokémon: The Rise of Darkrai', parts: 23, studio: 'OLM', releaseDate: '2007' },
-      { title: 'Pokémon: Giratina and the Sky Warrior', parts: 23, studio: 'OLM', releaseDate: '2008' },
-      { title: 'Pokémon: Arceus and the Jewel of Life', parts: 23, studio: 'OLM', releaseDate: '2009' },
-      { title: 'Doraemon: Nobita\'s Great Adventure into the Underworld', parts: 44, studio: 'Shin-Ei Animation', releaseDate: '1984' },
-      { title: 'Doraemon: Nobita and the Kingdom of Clouds', parts: 44, studio: 'Shin-Ei Animation', releaseDate: '1992' },
-      { title: 'Doraemon: Nobita and the Windmasters', parts: 44, studio: 'Shin-Ei Animation', releaseDate: '2003' },
-      { title: 'Doraemon: Nobita\'s Secret Gadget Museum', parts: 44, studio: 'Shin-Ei Animation', releaseDate: '2013' },
-      { title: 'Doraemon: Nobita\'s Chronicle of the Moon Exploration', parts: 44, studio: 'Shin-Ei Animation', releaseDate: '2019' },
-      { title: 'Evangelion: 3.0+1.0 Thrice Upon a Time', parts: 4, studio: 'Studio Khara', releaseDate: '2021' },
-      { title: 'Mobile Suit Gundam: Char\'s Counterattack', parts: 1, studio: 'Sunrise', releaseDate: '1988' },
-      { title: 'Mobile Suit Gundam F91', parts: 1, studio: 'Sunrise', releaseDate: '1991' },
-      { title: 'Mobile Suit Gundam Narrative', parts: 1, studio: 'Sunrise', releaseDate: '2018' },
-      { title: 'Mobile Suit Gundam Hathaway', parts: 3, studio: 'Sunrise', releaseDate: '2021' },
-      { title: 'Princess Principal: Crown Handler Chapter 1', parts: 6, studio: 'Actas', releaseDate: '2021' },
-      { title: 'Princess Principal: Crown Handler Chapter 2', parts: 6, studio: 'Actas', releaseDate: '2021' },
-      { title: 'Princess Principal: Crown Handler Chapter 3', parts: 6, studio: 'Actas', releaseDate: '2023' },
-      { title: 'Princess Principal: Crown Handler Chapter 4', parts: 6, studio: 'Actas', releaseDate: '2025' },
-      { title: 'Psycho-Pass: The Movie', parts: 1, studio: 'Production I.G', releaseDate: '2015' },
-      { title: 'Psycho-Pass: Providence', parts: 1, studio: 'Production I.G', releaseDate: '2023' },
-      { title: 'Code Geass: Lelouch of the Re;surrection', parts: 1, studio: 'Sunrise', releaseDate: '2019' },
-      { title: 'Re:ZERO Memory Snow', parts: 2, studio: 'White Fox', releaseDate: '2018' },
-      { title: 'Re:ZERO The Frozen Bond', parts: 2, studio: 'White Fox', releaseDate: '2019' },
-      { title: 'Love Live! The School Idol Movie', parts: 4, studio: 'Sunrise', releaseDate: '2015' },
-      { title: 'Pokémon: Zoroark – Master of Illusions', parts: 23, studio: 'OLM', releaseDate: '2010' },
-      { title: 'Pokémon the Movie: Black—Victini and Reshiram', parts: 23, studio: 'OLM', releaseDate: '2011' },
-      { title: 'Pokémon the Movie: White—Victini and Zekrom', parts: 23, studio: 'OLM', releaseDate: '2011' },
-      { title: 'Pokémon the Movie: Kyurem vs. the Sword of Justice', parts: 23, studio: 'OLM', releaseDate: '2012' },
-      { title: 'Pokémon the Movie: Genesect and the Legend Awakened', parts: 23, studio: 'OLM', releaseDate: '2013' },
-      { title: 'Pokémon the Movie: Diancie and the Cocoon of Destruction', parts: 23, studio: 'OLM', releaseDate: '2014' },
-      { title: 'Pokémon the Movie: Hoopa and the Clash of Ages', parts: 23, studio: 'OLM', releaseDate: '2015' },
-      { title: 'Pokémon the Movie: Volcanion and the Mechanical Marvel', parts: 23, studio: 'OLM', releaseDate: '2016' },
-      { title: 'Pokémon the Movie: I Choose You!', parts: 23, studio: 'OLM', releaseDate: '2017' },
-      { title: 'Pokémon the Movie: The Power of Us', parts: 23, studio: 'OLM', releaseDate: '2018' },
-      { title: 'Pokémon: Mewtwo Strikes Back—Evolution', parts: 23, studio: 'OLM', releaseDate: '2019' },
-      { title: 'Detective Conan: The Last Wizard of the Century', parts: 28, studio: 'TMS Entertainment', releaseDate: '1999' },
-      { title: 'Detective Conan: Countdown to Heaven', parts: 28, studio: 'TMS Entertainment', releaseDate: '2001' },
-      { title: 'Detective Conan: The Phantom of Baker Street', parts: 28, studio: 'TMS Entertainment', releaseDate: '2002' },
-      { title: 'Detective Conan: Magician of the Silver Sky', parts: 28, studio: 'TMS Entertainment', releaseDate: '2004' },
-      { title: 'Detective Conan: Private Eye in the Distant Sea', parts: 28, studio: 'TMS Entertainment', releaseDate: '2013' },
-      { title: 'Detective Conan: Dimensional Sniper', parts: 28, studio: 'TMS Entertainment', releaseDate: '2014' },
-      { title: 'Detective Conan: Sunflowers of Inferno', parts: 28, studio: 'TMS Entertainment', releaseDate: '2015' },
-      { title: 'Detective Conan: The Darkest Nightmare', parts: 28, studio: 'TMS Entertainment', releaseDate: '2016' },
-      { title: 'Detective Conan: Crimson Love Letter', parts: 28, studio: 'TMS Entertainment', releaseDate: '2017' },
-      { title: 'Detective Conan: Zero the Enforcer', parts: 28, studio: 'TMS Entertainment', releaseDate: '2018' },
-      { title: 'Detective Conan: The Fist of Blue Sapphire', parts: 28, studio: 'TMS Entertainment', releaseDate: '2019' },
-      { title: 'Detective Conan: The Bride of Halloween', parts: 28, studio: 'TMS Entertainment', releaseDate: '2022' },
-      { title: 'Doraemon: The Records of Nobita, Spaceblazer', parts: 44, studio: 'Shin-Ei Animation', releaseDate: '1981' },
-      { title: 'Doraemon: Nobita and the Haunts of Evil', parts: 44, studio: 'Shin-Ei Animation', releaseDate: '1982' },
-      { title: 'Doraemon: Nobita and the Castle of the Undersea Devil', parts: 44, studio: 'Shin-Ei Animation', releaseDate: '1983' },
-      { title: 'Doraemon: Nobita and the Little Star Wars', parts: 44, studio: 'Shin-Ei Animation', releaseDate: '1985' },
-      { title: 'Doraemon: Nobita and the Steel Troops', parts: 44, studio: 'Shin-Ei Animation', releaseDate: '1986' },
-      { title: 'Doraemon: Nobita and the Dragon Rider', parts: 44, studio: 'Shin-Ei Animation', releaseDate: '1987' },
-      { title: 'Doraemon: Nobita\'s Parallel Journey to the West', parts: 44, studio: 'Shin-Ei Animation', releaseDate: '1988' },
-      { title: 'Doraemon: Nobita and the Birth of Japan', parts: 44, studio: 'Shin-Ei Animation', releaseDate: '1989' },
-      { title: 'Doraemon: Nobita and the Animal Planet', parts: 44, studio: 'Shin-Ei Animation', releaseDate: '1990' },
-      { title: 'Doraemon: Nobita\'s Dorabian Nights', parts: 44, studio: 'Shin-Ei Animation', releaseDate: '1991' },
-      { title: 'Evangelion: Death and Rebirth', parts: 2, studio: 'Gainax / Production I.G', releaseDate: '1997' },
-      { title: 'The End of Evangelion', parts: 2, studio: 'Gainax / Production I.G', releaseDate: '1997' },
-      { title: 'Mobile Suit Gundam II: Soldiers of Sorrow', parts: 3, studio: 'Sunrise', releaseDate: '1981' },
-      { title: 'Mobile Suit Gundam III: Encounters in Space', parts: 3, studio: 'Sunrise', releaseDate: '1982' },
-      { title: 'Lupin III: The Castle of Cagliostro', parts: 1, studio: 'Tokyo Movie Shinsha', releaseDate: '1979' },
-      { title: 'Lupin III: Dead or Alive', parts: 1, studio: 'Tokyo Movie Shinsha', releaseDate: '1996' },
-      { title: 'Lupin III vs Detective Conan: The Movie', parts: 1, studio: 'TMS Entertainment', releaseDate: '2013' },
-      { title: 'City Hunter: Bay City Wars', parts: 2, studio: 'Sunrise', releaseDate: '1990' },
-      { title: 'City Hunter: Million Dollar Conspiracy', parts: 2, studio: 'Sunrise', releaseDate: '1990' },
-      { title: 'City Hunter: Shinjuku Private Eyes', parts: 1, studio: 'Sunrise', releaseDate: '2019' },
-      { title: 'City Hunter: Angel Dust', parts: 1, studio: 'Sunrise', releaseDate: '2023' },
-      { title: 'Fairy Tail: Phoenix Priestess', parts: 2, studio: 'A-1 Pictures', releaseDate: '2012' },
-      { title: 'Fairy Tail: Dragon Cry', parts: 2, studio: 'A-1 Pictures', releaseDate: '2017' },
-      { title: 'Gintama: The Movie', parts: 3, studio: 'Sunrise', releaseDate: '2010' },
-      { title: 'Gintama: The Final Chapter – Be Forever Yorozuya', parts: 3, studio: 'Sunrise', releaseDate: '2013' },
-      { title: 'Gintama: The Very Final', parts: 3, studio: 'Bandai Namco Pictures', releaseDate: '2021' },
-      { title: 'Yu Yu Hakusho: The Movie', parts: 2, studio: 'Studio Pierrot', releaseDate: '1993' },
-      { title: 'Yu Yu Hakusho: Poltergeist Report', parts: 2, studio: 'Studio Pierrot', releaseDate: '1994' },
-      { title: 'Saint Seiya: Evil Goddess Eris', parts: 5, studio: 'Toei Animation', releaseDate: '1987' },
-      { title: 'Saint Seiya: The Heated Battle of the Gods', parts: 5, studio: 'Toei Animation', releaseDate: '1988' },
-      { title: 'Saint Seiya: Legend of Crimson Youth', parts: 5, studio: 'Toei Animation', releaseDate: '1988' },
-      { title: 'Saint Seiya: Warriors of the Final Holy Battle', parts: 5, studio: 'Toei Animation', releaseDate: '1989' },
-      { title: 'Saint Seiya: Legend of Sanctuary', parts: 1, studio: 'Toei Animation', releaseDate: '2014' },
-      { title: 'Saint Seiya: Heaven Chapter – Overture', parts: 1, studio: 'Toei Animation', releaseDate: '2004' },
-      { title: 'Cardcaptor Sakura: The Movie', parts: 2, studio: 'Madhouse', releaseDate: '1999' },
-      { title: 'Cardcaptor Sakura: The Sealed Card', parts: 2, studio: 'Madhouse', releaseDate: '2000' },
-      { title: 'xxxHOLiC: A Midsummer Night\'s Dream', parts: 1, studio: 'Production I.G', releaseDate: '2005' },
-      { title: 'Tsubasa Reservoir Chronicle: The Princess in the Birdcage Kingdom', parts: 1, studio: 'Bee Train', releaseDate: '2005' },
-      { title: 'Inazuma Eleven: Saikyō Gundan Ogre Shūrai', parts: 1, studio: 'OLM', releaseDate: '2010' },
-      { title: 'Inazuma Eleven GO vs Danball Senki W', parts: 1, studio: 'OLM', releaseDate: '2012' },
-      { title: 'Danball Senki Wars: The Movie', parts: 1, studio: 'OLM', releaseDate: '2012' },
-      { title: 'Tiger & Bunny: The Beginning', parts: 2, studio: 'Sunrise', releaseDate: '2012' },
-      { title: 'Tiger & Bunny: The Rising', parts: 2, studio: 'Sunrise', releaseDate: '2014' },
-      { title: 'Space Battleship Yamato 2199: A Voyage to Remember', parts: 2, studio: 'Xebec / AIC', releaseDate: '2014' },
-      { title: 'Space Battleship Yamato 2199: Ark of the Stars', parts: 2, studio: 'Xebec', releaseDate: '2014' },
-      { title: 'Yamato 2202: Ai no Senshitachi Chapter 1', parts: 7, studio: 'Xebec', releaseDate: '2017' },
-      { title: 'Yamato 2202: Ai no Senshitachi Chapter 2', parts: 7, studio: 'Xebec', releaseDate: '2017' },
-      { title: 'Yamato 2202: Ai no Senshitachi Chapter 3', parts: 7, studio: 'Xebec', releaseDate: '2017' },
-      { title: 'Yamato 2202: Ai no Senshitachi Chapter 4', parts: 7, studio: 'Xebec', releaseDate: '2018' },
-      { title: 'Yamato 2202: Ai no Senshitachi Chapter 5', parts: 7, studio: 'Xebec', releaseDate: '2018' },
-      { title: 'Yamato 2202: Ai no Senshitachi Chapter 6', parts: 7, studio: 'Xebec', releaseDate: '2018' },
-      { title: 'Yamato 2202: Ai no Senshitachi Chapter 7', parts: 7, studio: 'Xebec', releaseDate: '2019' },
-      { title: 'Natsume\'s Book of Friends: Ephemeral Bond', parts: 2, studio: 'Shuka', releaseDate: '2018' },
-      { title: 'Natsume\'s Book of Friends: The Waking Rock and the Strange Visitor', parts: 2, studio: 'Shuka', releaseDate: '2021' },
-      { title: 'K: Missing Kings', parts: 2, studio: 'GoHands', releaseDate: '2014' },
-      { title: 'K: Seven Stories Episode 1', parts: 6, studio: 'GoHands', releaseDate: '2018' },
-      { title: 'K: Seven Stories Episode 2', parts: 6, studio: 'GoHands', releaseDate: '2018' },
-      { title: 'K: Seven Stories Episode 3', parts: 6, studio: 'GoHands', releaseDate: '2018' },
-      { title: 'K: Seven Stories Episode 4', parts: 6, studio: 'GoHands', releaseDate: '2018' },
-      { title: 'K: Seven Stories Episode 5', parts: 6, studio: 'GoHands', releaseDate: '2018' },
-      { title: 'K: Seven Stories Episode 6', parts: 6, studio: 'GoHands', releaseDate: '2018' },
-      { title: 'Majestic Prince: Genetic Awakening', parts: 1, studio: 'Seven Arcs Pictures', releaseDate: '2016' },
-      { title: 'Broken Blade Part 1', parts: 6, studio: 'Production I.G / Xebec', releaseDate: '2010' },
-      { title: 'Broken Blade Part 2', parts: 6, studio: 'Production I.G / Xebec', releaseDate: '2010' },
-      { title: 'Broken Blade Part 3', parts: 6, studio: 'Production I.G / Xebec', releaseDate: '2010' },
-      { title: 'Broken Blade Part 4', parts: 6, studio: 'Production I.G / Xebec', releaseDate: '2010' },
-      { title: 'Broken Blade Part 5', parts: 6, studio: 'Production I.G / Xebec', releaseDate: '2011' },
-      { title: 'Broken Blade Part 6', parts: 6, studio: 'Production I.G / Xebec', releaseDate: '2011' },
-      { title: 'Persona 3 The Movie #1: Spring of Birth', parts: 4, studio: 'AIC ASTA', releaseDate: '2013' },
-      { title: 'Persona 3 The Movie #2: Midsummer Knight\'s Dream', parts: 4, studio: 'A-1 Pictures', releaseDate: '2014' },
-      { title: 'Persona 3 The Movie #3: Falling Down', parts: 4, studio: 'A-1 Pictures', releaseDate: '2015' },
-      { title: 'Persona 3 The Movie #4: Winter of Rebirth', parts: 4, studio: 'A-1 Pictures', releaseDate: '2016' },
-      { title: 'Ace Attorney: The Movie Prologue', parts: 1, studio: 'A-1 Pictures', releaseDate: '2012' },
-      { title: 'Vampire Hunter D', parts: 2, studio: 'Ashi Productions', releaseDate: '1985' },
-      { title: 'Vampire Hunter D: Bloodlust', parts: 2, studio: 'Madhouse', releaseDate: '2000' },
-      { title: 'Appleseed', parts: 4, studio: 'Digital Frontier', releaseDate: '2004' },
-      { title: 'Appleseed Ex Machina', parts: 4, studio: 'Digital Frontier', releaseDate: '2007' }
-    ];
-    
-    return moviesData.map((m, i) => ({
-      ...m,
-      id: i + 1,
-      thumb: '',
-      thumbPortrait: '',
-      summary: '',
-      likes: [],
-      finished: false,
-      status: 'published',
-      comments: [],
-      type: 'movie',
-      proposedBy: null,
-      createdBy: null,
-      isPredefined: true,
-      isNewlyAdded: false,
-      isAdminAdded: false
-    }));
-  }
-
-  function buildInitialOvas() {
-    const ovasData = [
-      { title: 'One Punch Man OAV', oavType: 'OAV', parts: 12, studio: 'Madhouse / J.C.Staff', releaseDate: '2015' },
-      { title: 'Fairy Tail OAV', oavType: 'OAV', parts: 10, studio: 'A-1 Pictures / Bridge', releaseDate: '2011' },
-      { title: 'Noragami OAV', oavType: 'OAV', parts: 4, studio: 'Bones', releaseDate: '2014' },
-      { title: 'Nisekoi OAV', oavType: 'OAV', parts: 4, studio: 'Shaft', releaseDate: '2014' },
-      { title: 'Food Wars! OAV', oavType: 'OAV', parts: 5, studio: 'J.C.Staff', releaseDate: '2015' },
-      { title: 'To Love-Ru OAV', oavType: 'OAV', parts: 12, studio: 'Xebec', releaseDate: '2009' },
-      { title: 'High School DxD OAV', oavType: 'OAV', parts: 6, studio: 'TNK / Passione', releaseDate: '2012' },
-      { title: 'Strike the Blood OAV', oavType: 'OAV', parts: 24, studio: 'Silver Link / Connect', releaseDate: '2015' },
-      { title: 'Arifureta OAV', oavType: 'OAV', parts: 3, studio: 'Asread / Studio Mother', releaseDate: '2019' },
-      { title: 'DanMachi OAV', oavType: 'OAV', parts: 3, studio: 'J.C.Staff', releaseDate: '2016' },
-      { title: 'Attack on Titan: Ilse\'s Notebook', oavType: 'Épisode spécial', parts: 1, studio: 'Wit Studio', releaseDate: '2013' },
-      { title: 'Attack on Titan: A Sudden Visitor', oavType: 'Épisode spécial', parts: 1, studio: 'Wit Studio', releaseDate: '2014' },
-      { title: 'Attack on Titan: Distress', oavType: 'Épisode spécial', parts: 1, studio: 'Wit Studio', releaseDate: '2014' },
-      { title: 'Attack on Titan: No Regrets', oavType: 'OAV', parts: 2, studio: 'Wit Studio', releaseDate: '2014' },
-      { title: 'Attack on Titan: Lost Girls', oavType: 'OAV', parts: 3, studio: 'Wit Studio', releaseDate: '2017' },
-      { title: 'Dragon Ball Z: Bardock – The Father of Goku', oavType: 'Épisode spécial', parts: 1, studio: 'Toei Animation', releaseDate: '1990' },
-      { title: 'Dragon Ball Z: The History of Trunks', oavType: 'Épisode spécial', parts: 1, studio: 'Toei Animation', releaseDate: '1993' },
-      { title: 'Dragon Ball: Episode of Bardock', oavType: 'OAV', parts: 1, studio: 'Toei Animation', releaseDate: '2011' },
-      { title: 'Naruto: Find the Crimson Four-Leaf Clover!', oavType: 'OAV', parts: 1, studio: 'Studio Pierrot', releaseDate: '2003' },
-      { title: 'Naruto: The Cross Roads', oavType: 'OAV', parts: 1, studio: 'Studio Pierrot', releaseDate: '2009' },
-      { title: 'Naruto Shippuden: Chūnin Exam on Fire!', oavType: 'OAV', parts: 1, studio: 'Studio Pierrot', releaseDate: '2011' },
-      { title: 'Naruto Shippuden: Sunny Side Battle!', oavType: 'OAV', parts: 1, studio: 'Studio Pierrot', releaseDate: '2014' },
-      { title: 'Boruto: The Day Naruto Became Hokage', oavType: 'OAV', parts: 1, studio: 'Studio Pierrot', releaseDate: '2016' },
-      { title: 'One Piece: Episode of Luffy', oavType: 'Épisode spécial', parts: 1, studio: 'Toei Animation', releaseDate: '2012' },
-      { title: 'One Piece: Episode of Nami', oavType: 'Épisode spécial', parts: 1, studio: 'Toei Animation', releaseDate: '2012' },
-      { title: 'One Piece: Episode of Merry', oavType: 'Épisode spécial', parts: 1, studio: 'Toei Animation', releaseDate: '2013' },
-      { title: 'One Piece: Adventure in Nebulandia', oavType: 'Épisode spécial', parts: 1, studio: 'Toei Animation', releaseDate: '2015' },
-      { title: 'One Piece: Episode of Sabo', oavType: 'Épisode spécial', parts: 1, studio: 'Toei Animation', releaseDate: '2015' },
-      { title: 'One Piece: Episode of East Blue', oavType: 'Épisode spécial', parts: 1, studio: 'Toei Animation', releaseDate: '2017' },
-      { title: 'One Piece: Episode of Skypiea', oavType: 'Épisode spécial', parts: 1, studio: 'Toei Animation', releaseDate: '2018' },
-      { title: 'Death Note: Rewrite – Visions of a God', oavType: 'Épisode spécial', parts: 1, studio: 'Madhouse', releaseDate: '2007' },
-      { title: 'Death Note: Rewrite 2 – L\'s Successors', oavType: 'Épisode spécial', parts: 1, studio: 'Madhouse', releaseDate: '2008' },
-      { title: 'Fullmetal Alchemist: The Blind Alchemist', oavType: 'OAV', parts: 1, studio: 'Bones', releaseDate: '2003' },
-      { title: 'Fullmetal Alchemist: Simple People', oavType: 'OAV', parts: 1, studio: 'Bones', releaseDate: '2009' },
-      { title: 'Fullmetal Alchemist: The Tale of Teacher', oavType: 'OAV', parts: 1, studio: 'Bones', releaseDate: '2009' },
-      { title: 'Fullmetal Alchemist: Yet Another Man\'s Battlefield', oavType: 'OAV', parts: 1, studio: 'Bones', releaseDate: '2009' },
-      { title: 'Fullmetal Alchemist: Brotherhood Specials', oavType: 'Épisode spécial', parts: 4, studio: 'Bones', releaseDate: '2009' },
-      { title: 'Tokyo Ghoul: Jack', oavType: 'OAV', parts: 1, studio: 'Studio Pierrot', releaseDate: '2015' },
-      { title: 'Tokyo Ghoul: Pinto', oavType: 'OAV', parts: 1, studio: 'Studio Pierrot', releaseDate: '2015' },
-      { title: 'Black Butler: Book of Murder', oavType: 'OAV', parts: 2, studio: 'A-1 Pictures', releaseDate: '2014' },
-      { title: 'The Ancient Magus\' Bride: Those Awaiting a Star', oavType: 'OAV', parts: 3, studio: 'Wit Studio', releaseDate: '2016' },
-      { title: 'Code Geass: Kiseki no Birthday', oavType: 'Épisode spécial', parts: 1, studio: 'Sunrise', releaseDate: '2010' },
-      { title: 'Code Geass: Nunnally in Wonderland', oavType: 'OAV', parts: 1, studio: 'Sunrise', releaseDate: '2012' },
-      { title: 'Rurouni Kenshin: Trust & Betrayal', oavType: 'OAV', parts: 4, studio: 'Studio Deen', releaseDate: '1999' },
-      { title: 'Rurouni Kenshin: Reflection', oavType: 'OAV', parts: 2, studio: 'Studio Deen', releaseDate: '2001' },
-      { title: 'Samurai X: New Kyoto Arc', oavType: 'OAV', parts: 2, studio: 'Studio Deen', releaseDate: '2011' },
-      { title: 'Hellsing Ultimate', oavType: 'OAV', parts: 10, studio: 'Satelight / Madhouse / Graphinica', releaseDate: '2006' },
-      { title: 'FLCL', oavType: 'OAV', parts: 6, studio: 'Gainax / Production I.G', releaseDate: '2000' },
-      { title: 'Gunbuster', oavType: 'OAV', parts: 6, studio: 'Gainax', releaseDate: '1988' },
-      { title: 'Diebuster', oavType: 'OAV', parts: 6, studio: 'Gainax', releaseDate: '2004' },
-      { title: 'Mobile Suit Gundam Unicorn', oavType: 'OAV', parts: 7, studio: 'Sunrise', releaseDate: '2010' },
-      { title: 'Mobile Suit Gundam: The Origin', oavType: 'OAV', parts: 6, studio: 'Sunrise', releaseDate: '2015' },
-      { title: 'Saint Seiya: The Hades Chapter – Sanctuary', oavType: 'OAV', parts: 13, studio: 'Toei Animation', releaseDate: '2002' },
-      { title: 'Saint Seiya: The Hades Chapter – Inferno', oavType: 'OAV', parts: 12, studio: 'Toei Animation', releaseDate: '2005' },
-      { title: 'Saint Seiya: The Hades Chapter – Elysion', oavType: 'OAV', parts: 6, studio: 'Toei Animation', releaseDate: '2008' },
-      { title: 'JoJo\'s Bizarre Adventure OVA', oavType: 'OAV', parts: 13, studio: 'A.P.P.P.', releaseDate: '1993' },
-      { title: 'Tenchi Muyo! Ryo-Ohki', oavType: 'OAV', parts: 26, studio: 'AIC', releaseDate: '1992' },
-      { title: 'Legend of the Galactic Heroes', oavType: 'OAV', parts: 110, studio: 'Kitty Film / Shaft', releaseDate: '1988' },
-      { title: 'Bubblegum Crisis', oavType: 'OAV', parts: 8, studio: 'AIC / Artmic', releaseDate: '1987' },
-      { title: 'Read or Die', oavType: 'OAV', parts: 3, studio: 'Studio Deen', releaseDate: '2001' },
-      { title: 'Black Lagoon: Roberta\'s Blood Trail', oavType: 'OAV', parts: 5, studio: 'Madhouse', releaseDate: '2010' },
-      { title: 'Higurashi no Naku Koro ni Rei', oavType: 'OAV', parts: 5, studio: 'Studio Deen', releaseDate: '2009' },
-      { title: 'Higurashi no Naku Koro ni Kira', oavType: 'OAV', parts: 4, studio: 'Studio Deen', releaseDate: '2011' },
-      { title: 'Higurashi no Naku Koro ni Outbreak', oavType: 'OAV', parts: 1, studio: 'Studio Deen', releaseDate: '2013' },
-      { title: 'Higurashi no Naku Koro ni Nekogoroshi-hen', oavType: 'Épisode spécial', parts: 1, studio: 'Studio Deen', releaseDate: '2007' },
-      { title: 'Re:ZERO Memory Snow', oavType: 'Épisode spécial', parts: 1, studio: 'White Fox', releaseDate: '2018' },
-      { title: 'Re:ZERO The Frozen Bond', oavType: 'Épisode spécial', parts: 1, studio: 'White Fox', releaseDate: '2019' },
-      { title: 'ReLIFE: Kanketsu-hen', oavType: 'OAV', parts: 4, studio: 'TMS Entertainment', releaseDate: '2018' },
-      { title: 'KonoSuba OVA', oavType: 'OAV', parts: 2, studio: 'Studio Deen / Drive', releaseDate: '2016' },
-      { title: 'My Teen Romantic Comedy SNAFU OVA', oavType: 'OAV', parts: 3, studio: 'Brain\'s Base / feel.', releaseDate: '2013' },
-      { title: 'My Hero Academia OVA', oavType: 'OAV', parts: 8, studio: 'Bones', releaseDate: '2017' },
-      { title: 'Haikyuu!! OVA', oavType: 'OAV', parts: 10, studio: 'Production I.G', releaseDate: '2014' },
-      { title: 'Blue Exorcist OVA', oavType: 'OAV', parts: 3, studio: 'A-1 Pictures', releaseDate: '2011' },
-      { title: 'Magi: Sinbad no Bouken', oavType: 'OAV', parts: 5, studio: 'Lay-duce', releaseDate: '2014' },
-      { title: 'Alice in Borderland', oavType: 'Live Action', parts: 17, studio: 'Robot Communications / Netflix', releaseDate: '2020' },
-      { title: 'One Piece', oavType: 'Live Action', parts: 8, studio: 'Tomorrow Studios / Netflix', releaseDate: '2023' },
-      { title: 'Yu Yu Hakusho', oavType: 'Live Action', parts: 5, studio: 'Robot Communications / Netflix', releaseDate: '2023' },
-      { title: 'Cowboy Bebop', oavType: 'Live Action', parts: 10, studio: 'Tomorrow Studios / Netflix', releaseDate: '2021' },
-      { title: 'Zom 100: Bucket List of the Dead', oavType: 'Live Action', parts: 1, studio: 'Robot Communications / Netflix', releaseDate: '2023' },
-      { title: 'Death Note', oavType: 'Live Action', parts: 4, studio: 'Nippon TV', releaseDate: '2006' },
-      { title: 'Death Note (Netflix)', oavType: 'Live Action', parts: 1, studio: 'Vertigo Entertainment / Netflix', releaseDate: '2017' },
-      { title: 'Rurouni Kenshin', oavType: 'Live Action', parts: 5, studio: 'Warner Bros. Japan', releaseDate: '2012' },
-      { title: 'Bleach', oavType: 'Live Action', parts: 1, studio: 'Warner Bros. Japan', releaseDate: '2018' },
-      { title: 'Fullmetal Alchemist', oavType: 'Live Action', parts: 3, studio: 'Warner Bros. Japan', releaseDate: '2017' },
-      { title: 'JoJo\'s Bizarre Adventure: Diamond Is Unbreakable Chapter I', oavType: 'Live Action', parts: 1, studio: 'Toho', releaseDate: '2017' },
-      { title: 'Assassination Classroom', oavType: 'Live Action', parts: 2, studio: 'Toho', releaseDate: '2015' },
-      { title: 'Kingdom', oavType: 'Live Action', parts: 4, studio: 'Sony Pictures Japan', releaseDate: '2019' },
-      { title: 'Gintama', oavType: 'Live Action', parts: 2, studio: 'Warner Bros. Japan', releaseDate: '2017' },
-      { title: 'Tokyo Revengers', oavType: 'Live Action', parts: 3, studio: 'Warner Bros. Japan', releaseDate: '2021' },
-      { title: 'The Promised Neverland', oavType: 'Live Action', parts: 1, studio: 'Toho', releaseDate: '2020' },
-      { title: 'Kakegurui', oavType: 'Live Action', parts: 2, studio: 'GAGA', releaseDate: '2019' },
-      { title: 'Erased', oavType: 'Live Action', parts: 12, studio: 'Netflix Japan', releaseDate: '2017' },
-      { title: 'From Me to You', oavType: 'Live Action', parts: 12, studio: 'TV Tokyo / Netflix', releaseDate: '2023' },
-      { title: 'Parasyte: The Grey', oavType: 'Live Action', parts: 6, studio: 'Climax Studio / Netflix', releaseDate: '2024' },
-      { title: 'My Happy Marriage', oavType: 'Live Action', parts: 1, studio: 'Toho', releaseDate: '2023' },
-      { title: 'Golden Kamuy', oavType: 'Live Action', parts: 1, studio: 'Credeus', releaseDate: '2024' },
-      { title: 'Cells at Work!', oavType: 'Live Action', parts: 1, studio: 'Warner Bros. Japan', releaseDate: '2024' },
-      { title: 'InuYasha: Black Tessaiga', oavType: 'Épisode spécial', parts: 1, studio: 'Sunrise', releaseDate: '2008' },
-      { title: 'xxxHOLiC Shunmuki', oavType: 'OAV', parts: 2, studio: 'Production I.G', releaseDate: '2009' },
-      { title: 'xxxHOLiC Rou', oavType: 'OAV', parts: 2, studio: 'Production I.G', releaseDate: '2010' },
-      { title: 'xxxHOLiC: Rō Adayume', oavType: 'OAV', parts: 1, studio: 'Production I.G', releaseDate: '2011' },
-      { title: 'Tsubasa Tokyo Revelations', oavType: 'OAV', parts: 3, studio: 'Production I.G', releaseDate: '2007' },
-      { title: 'Tsubasa Spring Thunder Chronicle', oavType: 'OAV', parts: 2, studio: 'Production I.G', releaseDate: '2009' },
-      { title: 'Cardcaptor Sakura: Clear Card Prologue – Sakura and the Two Bears', oavType: 'OAV', parts: 1, studio: 'Madhouse', releaseDate: '2017' },
-      { title: 'Detective Conan OVA', oavType: 'OAV', parts: 12, studio: 'TMS Entertainment', releaseDate: '2000' },
-      { title: 'Detective Conan: The Disappearance of Conan Edogawa', oavType: 'Épisode spécial', parts: 1, studio: 'TMS Entertainment', releaseDate: '2014' },
-      { title: 'Hunter × Hunter: Greed Island', oavType: 'OAV', parts: 8, studio: 'Nippon Animation', releaseDate: '2003' },
-      { title: 'Hunter × Hunter: Greed Island Final', oavType: 'OAV', parts: 14, studio: 'Nippon Animation', releaseDate: '2004' },
-      { title: 'Initial D Extra Stage', oavType: 'OAV', parts: 2, studio: 'Studio Comet', releaseDate: '2000' },
-      { title: 'Initial D Battle Stage', oavType: 'OAV', parts: 3, studio: 'Studio Comet / SynergySP', releaseDate: '2002' },
-      { title: 'Ace of Diamond OAD', oavType: 'OAV', parts: 5, studio: 'Madhouse / Production I.G', releaseDate: '2014' },
-      { title: 'Yowamushi Pedal OAD', oavType: 'OAV', parts: 3, studio: 'TMS Entertainment', releaseDate: '2013' },
-      { title: 'Kuroko\'s Basketball OVA', oavType: 'OAV', parts: 1, studio: 'Production I.G', releaseDate: '2013' },
-      { title: 'Prince of Tennis OVA', oavType: 'OAV', parts: 34, studio: 'M.S.C / Production I.G', releaseDate: '2006' },
-      { title: 'Baby Steps OAD', oavType: 'OAV', parts: 1, studio: 'Pierrot Plus', releaseDate: '2014' },
-      { title: 'The Seven Deadly Sins OVA', oavType: 'OAV', parts: 2, studio: 'A-1 Pictures', releaseDate: '2015' },
-      { title: 'Akame ga Kill! OVA', oavType: 'OAV', parts: 1, studio: 'White Fox', releaseDate: '2015' },
-      { title: 'Drifters OVA', oavType: 'OAV', parts: 2, studio: 'Hoods Drifters Studio', releaseDate: '2017' },
-      { title: 'D.Gray-man Hallow OAD', oavType: 'OAV', parts: 1, studio: 'TMS Entertainment', releaseDate: '2016' },
-      { title: 'Bungo Stray Dogs OVA', oavType: 'OAV', parts: 1, studio: 'Bones', releaseDate: '2017' },
-      { title: 'The Rising of the Shield Hero OVA', oavType: 'OAV', parts: 2, studio: 'Kinema Citrus', releaseDate: '2019' },
-      { title: 'Goblin Slayer OVA', oavType: 'Épisode spécial', parts: 1, studio: 'White Fox', releaseDate: '2020' },
-      { title: 'Overlord Ple Ple Pleiades', oavType: 'Épisode spécial', parts: 52, studio: 'Madhouse', releaseDate: '2015' },
-      { title: 'That Time I Got Reincarnated as a Slime OAD', oavType: 'OAV', parts: 5, studio: '8bit', releaseDate: '2018' },
-      { title: 'The Misfit of Demon King Academy OVA', oavType: 'OAV', parts: 1, studio: 'Silver Link', releaseDate: '2022' },
-      { title: 'Prison School OVA', oavType: 'OAV', parts: 1, studio: 'J.C.Staff', releaseDate: '2016' },
-      { title: 'Golden Boy', oavType: 'OAV', parts: 6, studio: 'A.P.P.P.', releaseDate: '1995' },
-      { title: 'Devilman OVA', oavType: 'OAV', parts: 5, studio: 'Oh! Production / Studio Live', releaseDate: '1987' },
-      { title: 'Violence Jack', oavType: 'OAV', parts: 3, studio: 'Studio 88', releaseDate: '1986' },
-      { title: 'Bastard!! OVA', oavType: 'OAV', parts: 6, studio: 'AIC', releaseDate: '1992' },
-      { title: 'Record of Lodoss War', oavType: 'OAV', parts: 13, studio: 'Madhouse', releaseDate: '1990' },
-      { title: 'MD Geist', oavType: 'OAV', parts: 2, studio: 'Zero-G Room', releaseDate: '1986' },
-      { title: 'Area 88', oavType: 'OAV', parts: 3, studio: 'Studio Pierrot', releaseDate: '1985' },
-      { title: 'Otaku no Video', oavType: 'OAV', parts: 2, studio: 'Gainax', releaseDate: '1991' },
-      { title: 'Cyber City Oedo 808', oavType: 'OAV', parts: 3, studio: 'Madhouse', releaseDate: '1990' }
-    ];
-    
-    return ovasData.map((o, i) => ({
-      ...o,
-      id: i + 1,
-      thumb: '',
-      thumbPortrait: '',
-      summary: '',
-      likes: [],
-      finished: false,
-      status: 'published',
-      comments: [],
-      proposedBy: null,
-      createdBy: null,
-      isPredefined: false,
-      isNewlyAdded: false,
-      isAdminAdded: false,
-      type: 'oav'
     }));
   }
 
@@ -5127,6 +4398,10 @@
       const upcomingSearch = ref('');
       const upcomingPage = ref(1);
       const upcomingForm = ref({ type: 'anime', title: '', ep: 0, parts: 1, saison: 1, studio: '', category: '', oavType: 'OAV', thumb: '', thumbPortrait: '', summary: '', releaseDate: '' });
+      const showAdminForm = ref(false);
+      const showDeleteItems = ref(false);
+      const showCategoryForm = ref(false);
+      const showUserDelete = ref(false);
 
       const contextMenuVisible = ref(false);
       const contextMenuX = ref(0);
@@ -5882,13 +5157,13 @@
           }
 
           if (firestoreMovies.length === 0) {
-            const predefinedMovies = buildInitialMovies();
+            const predefinedMovies = [];
             await syncCatalogCollection(MOVIES_COLLECTION, predefinedMovies);
             firestoreMovies = await loadCatalogCollection(MOVIES_COLLECTION);
           }
 
           if (firestoreOvas.length === 0) {
-            const predefinedOvas = buildInitialOvas();
+            const predefinedOvas = [];
             await syncCatalogCollection(OVAS_COLLECTION, predefinedOvas);
             firestoreOvas = await loadCatalogCollection(OVAS_COLLECTION);
           }
@@ -6053,8 +5328,8 @@
         }
         if (animes.value.length === 0 && movies.value.length === 0 && ovas.value.length === 0) {
           animes.value = buildAllAnimes();
-          movies.value = buildInitialMovies();
-          ovas.value = buildInitialOvas();
+          movies.value = [];
+          ovas.value = [];
           saveAll();
         }
       };
@@ -6542,6 +5817,10 @@
       };
       const goToAdminPage = () => {
         currentPage.value = 'admin-page';
+        showAdminForm.value = false;
+        showDeleteItems.value = false;
+        showCategoryForm.value = false;
+        showUserDelete.value = false;
         window.scrollTo({ top: 0, behavior: 'smooth' });
       };
       const viewMyWatched = () => {
@@ -6793,14 +6072,9 @@
       };
       const adminSubmit = async () => {
         if (!adminForm.value.title.trim()) {
-          showToast('Titre obligatoire', 'warning');
+          showToast('Le titre est obligatoire', 'warning');
           return;
         }
-        const confirmed = await showConfirm(
-          'Confirmation',
-          'Êtes-vous sûr de vouloir ' + (adminForm.value.editId ? 'modifier' : 'ajouter') + ' cet animé ?'
-        );
-        if (!confirmed) return;
         
         const baseData = {
           title: adminForm.value.title.trim(),
@@ -6824,27 +6098,18 @@
           data = { ...baseData, type: 'anime', ep: adminForm.value.ep || 0, saison: adminForm.value.saison || 1,
             films: adminForm.value.films || 0, category: adminForm.value.category || '' };
         }
-        if (adminForm.value.editId) {
-          if (adminForm.value.type === 'movie') {
-            await updateMovie(adminForm.value.editId, data);
-          } else if (adminForm.value.type === 'oav') {
-            await updateOva(adminForm.value.editId, data);
-          } else {
-            await updateAnime(adminForm.value.editId, data);
-          }
-          showToast('Animé modifié !', 'success');
+        
+        data.createdBy = currentUser.value.id;
+        if (adminForm.value.type === 'movie') {
+          await addMovie(data);
+        } else if (adminForm.value.type === 'oav') {
+          await addOva(data);
         } else {
-          data.createdBy = currentUser.value.id;
-          if (adminForm.value.type === 'movie') {
-            await addMovie(data);
-          } else if (adminForm.value.type === 'oav') {
-            await addOva(data);
-          } else {
-            await addAnime(data);
-          }
-          showToast('Animé ajouté !', 'success');
+          await addAnime(data);
         }
+        showToast('Animé ajouté avec succès !', 'success');
         resetAdminForm();
+        showAdminForm.value = false;
         await saveAll();
       };
 
@@ -6869,6 +6134,7 @@
           editId: item.id
         };
         currentPage.value = 'admin-page';
+        showAdminForm.value = true;
         window.scrollTo({ top: 0, behavior: 'smooth' });
       };
 
@@ -6884,7 +6150,9 @@
             }
             if (selectedItem.value && selectedItem.value.id === id) selectedItem.value = null;
             showToast('Animé supprimé', 'success');
-            goBackFromDetail();
+            if (showDeleteItems.value) {
+              showDeleteItems.value = false;
+            }
           }
         });
       };
@@ -7526,6 +6794,7 @@
           saveAll();
           showToast('Utilisateur supprimé.', 'success');
           userToDelete.value = '';
+          showUserDelete.value = false;
         });
       };
 
@@ -7545,6 +6814,7 @@
             newCategory.value = '';
             saveAll();
             showToast('Catégorie ajoutée !', 'success');
+            showCategoryForm.value = false;
           }
         });
       };
@@ -7704,6 +6974,7 @@
         showSettings, settingsTab, settingsDisplayName, settingsPassword, newCategory,
         colorPalette, selectedColor, userToDelete, deletableUsers,
         upcomingSearch, upcomingPage, upcomingForm,
+        showAdminForm, showDeleteItems, showCategoryForm, showUserDelete,
         watchedList, toWatchList, customLists, recommendations, followers, friends, messages, selectedChatUser, newMessage, typingStatus, isRecording, chatMessagesRef,
         currentAdminCode, loginUsername, loginPassword, loginError, loginSuccess,
         registerDisplayName, registerUsername, registerPassword, registerError, registerSuccess,
