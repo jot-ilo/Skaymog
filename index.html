@@ -2571,7 +2571,20 @@
       transition: 0.3s;
     }
     .image-upload-area .image-row .edit-btn:hover { transform: scale(1.1); }
-  </style>
+  
+    .pages .page-btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      text-decoration: none;
+      cursor: pointer;
+    }
+    .pages .page-btn[aria-disabled="true"] {
+      opacity: .45;
+      pointer-events: none;
+      cursor: default;
+    }
+</style>
 </head>
 <body>
 <div id="app" v-cloak>
@@ -3481,9 +3494,9 @@
           </div>
         </div>
         <div class="pages">
-          <button @click="animePage--" :disabled="animePage===1"><i class="fas fa-chevron-left"></i></button>
+          <a class="page-btn" :href="catalogUrlKey('animes') ? catalogPageUrl('animes', animePage - 1) : '#'" :aria-disabled="animePage===1" :tabindex="animePage===1 ? -1 : 0"><i class="fas fa-chevron-left"></i></a>
           <span>{{ animePage }} / {{ animeTotalPages }}</span>
-          <button @click="goNextCatalogPage('animes')" :disabled="animePage===animeTotalPages"><i class="fas fa-chevron-right"></i></button>
+          <a class="page-btn" :href="catalogPageUrl('animes', animePage + 1)" :aria-disabled="animePage===animeTotalPages" :tabindex="animePage===animeTotalPages ? -1 : 0"><i class="fas fa-chevron-right"></i></a>
         </div>
       </div>
 
@@ -3536,9 +3549,9 @@
           </div>
         </div>
         <div class="pages">
-          <button @click="seriesPage--" :disabled="seriesPage===1"><i class="fas fa-chevron-left"></i></button>
+          <a class="page-btn" :href="catalogPageUrl('series', seriesPage - 1)" :aria-disabled="seriesPage===1" :tabindex="seriesPage===1 ? -1 : 0"><i class="fas fa-chevron-left"></i></a>
           <span>{{ seriesPage }} / {{ seriesTotalPages }}</span>
-          <button @click="goNextCatalogPage('animes', 'series')" :disabled="seriesPage===seriesTotalPages"><i class="fas fa-chevron-right"></i></button>
+          <a class="page-btn" :href="catalogPageUrl('series', seriesPage + 1)" :aria-disabled="seriesPage===seriesTotalPages" :tabindex="seriesPage===seriesTotalPages ? -1 : 0"><i class="fas fa-chevron-right"></i></a>
         </div>
       </div>
 
@@ -3586,9 +3599,9 @@
           </div>
         </div>
         <div class="pages">
-          <button @click="moviePage--" :disabled="moviePage===1"><i class="fas fa-chevron-left"></i></button>
+          <a class="page-btn" :href="catalogPageUrl('movies', moviePage - 1)" :aria-disabled="moviePage===1" :tabindex="moviePage===1 ? -1 : 0"><i class="fas fa-chevron-left"></i></a>
           <span>{{ moviePage }} / {{ movieTotalPages }}</span>
-          <button @click="goNextCatalogPage('movies')" :disabled="moviePage===movieTotalPages"><i class="fas fa-chevron-right"></i></button>
+          <a class="page-btn" :href="catalogPageUrl('movies', moviePage + 1)" :aria-disabled="moviePage===movieTotalPages" :tabindex="moviePage===movieTotalPages ? -1 : 0"><i class="fas fa-chevron-right"></i></a>
         </div>
       </div>
 
@@ -3628,9 +3641,9 @@
           </div>
         </div>
         <div class="pages">
-          <button @click="ovaPage--" :disabled="ovaPage===1"><i class="fas fa-chevron-left"></i></button>
+          <a class="page-btn" :href="catalogPageUrl('ovas', ovaPage - 1)" :aria-disabled="ovaPage===1" :tabindex="ovaPage===1 ? -1 : 0"><i class="fas fa-chevron-left"></i></a>
           <span>{{ ovaPage }} / {{ ovaTotalPages }}</span>
-          <button @click="goNextCatalogPage('ovas')" :disabled="ovaPage===ovaTotalPages"><i class="fas fa-chevron-right"></i></button>
+          <a class="page-btn" :href="catalogPageUrl('ovas', ovaPage + 1)" :aria-disabled="ovaPage===ovaTotalPages" :tabindex="ovaPage===ovaTotalPages ? -1 : 0"><i class="fas fa-chevron-right"></i></a>
         </div>
       </div>
 
@@ -6363,21 +6376,72 @@
       const viewMyWatched = () => { selectedList.value = 'watched'; currentPage.value = 'home'; currentTab.value = 'lists'; window.scrollTo({ top: 0, behavior: 'smooth' }); };
       const viewMyPublished = () => { viewedUser.value = currentUser.value; currentPage.value = 'user-page'; showUserPublished.value = true; showUserWatched.value = false; window.scrollTo({ top: 0, behavior: 'smooth' }); };
       const viewUserPublished = () => { showUserPublished.value = !showUserPublished.value; showUserWatched.value = false; };
-      const goNextCatalogPage = async (key, mode = null) => {
-        const pageRef = mode === 'series' ? seriesPage : key === 'movies' ? moviePage : key === 'ovas' ? ovaPage : animePage;
-        const totalPagesRef = mode === 'series' ? seriesTotalPages : key === 'movies' ? movieTotalPages : key === 'ovas' ? ovaTotalPages : animeTotalPages;
-        const currentItemsLength = key === 'movies' ? movies.value.length : key === 'ovas' ? ovas.value.length : animes.value.length;
-        const loadedPages = Math.ceil(currentItemsLength / pageSize);
-        if (pageRef.value >= loadedPages && catalogHasMore[key].value) {
-          await loadMoreCatalog(key);
+      // --- PAGINATION PAR URL ---
+      const catalogUrlKey = (key, mode = null) => mode === 'series' ? 'series' : key;
+
+      const getCatalogPageFromUrl = () => {
+        const params = new URLSearchParams(window.location.search);
+        const page = parseInt(params.get('page') || '1', 10);
+        return Number.isFinite(page) && page > 0 ? page : 1;
+      };
+
+      const getCatalogTabFromUrl = () => {
+        const params = new URLSearchParams(window.location.search);
+        const tab = params.get('tab');
+        return ['animes', 'series', 'movies', 'ovas'].includes(tab) ? tab : null;
+      };
+
+      const catalogPageUrl = (tab, page) => {
+        const url = new URL(window.location.href);
+        url.searchParams.set('tab', tab);
+        url.searchParams.set('page', String(Math.max(1, page)));
+        return url.pathname + url.search;
+      };
+
+      const goToCatalogPage = (tab, page) => {
+        window.location.href = catalogPageUrl(tab, page);
+      };
+
+      const getCatalogState = (tab) => {
+        if (tab === 'movies') return { page: moviePage, total: movieTotalPages, key: 'movies', items: movies };
+        if (tab === 'ovas') return { page: ovaPage, total: ovaTotalPages, key: 'ovas', items: ovas };
+        if (tab === 'series') return { page: seriesPage, total: seriesTotalPages, key: 'animes', items: animes };
+        return { page: animePage, total: animeTotalPages, key: 'animes', items: animes };
+      };
+
+      const applyCatalogUrl = async () => {
+        const tab = getCatalogTabFromUrl();
+        const requestedPage = getCatalogPageFromUrl();
+        if (!tab) return;
+
+        currentPage.value = 'home';
+        currentTab.value = tab;
+        animeSearch.value = '';
+        seriesSearch.value = '';
+        movieSearch.value = '';
+        ovaSearch.value = '';
+        animeCatFilter.value = '';
+        seriesCatFilter.value = '';
+
+        const state = getCatalogState(tab);
+
+        // Load enough Firestore pages to reach the requested URL page.
+        const neededItems = requestedPage * pageSize;
+        while (state.items.value.length < neededItems && catalogHasMore[state.key].value) {
+          const before = state.items.value.length;
+          await loadMoreCatalog(state.key);
+          if (state.items.value.length === before) break;
         }
-        if (pageRef.value < totalPagesRef.value) {
-          pageRef.value++;
-          window.scrollTo({ top: 0, behavior: 'smooth' });
-        }
+
+        state.page.value = Math.min(
+          requestedPage,
+          Math.max(1, Math.ceil(state.items.value.length / pageSize))
+        );
+        window.scrollTo({ top: 0, behavior: 'auto' });
       };
 
       const resetAnimePage = () => { animePage.value = 1; };
+ = () => { animePage.value = 1; };
       const resetSeriesPage = () => { seriesPage.value = 1; };
       const resetProposalPage = () => { proposalPage.value = 1; };
       const resetUpcomingPage = () => { upcomingPage.value = 1; };
@@ -7424,6 +7488,7 @@
       onMounted(async () => {
         showLoading('Chargement de l\'application...');
         await loadAll();
+        await applyCatalogUrl();
         createDefaultAdmin();
         listenState();
 
@@ -7461,6 +7526,9 @@
 
       // --- RETURN ---
       return {
+      goToCatalogPage,
+      catalogPageUrl,
+
         users, animes, movies, ovas, proposals, movieProposals, ovaProposals, newReleases, reports, currentUser,
         currentPage, currentTab, animeCatFilter, animeSearch, animePage,
         seriesCatFilter, seriesSearch, seriesPage,
